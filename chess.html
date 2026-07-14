@@ -538,7 +538,7 @@ var FAMOUS_GAMES=[
   {name:'Evergreen Game',players:'Anderssen vs Dufresne',year:1852,uci:['e2e4','e7e5','f2f4','d7d5','f1c4','d5e4','b1c3','g8f6','d1b3','f6e4','c3e4','d8h4','e1f1','f8b4','c1e3','b4c3','b3c3','h4c3','e4d6','c8f5','d6f7','e8f7','c4d5','f5d7','a1d1','d7e6','d5e6']},
   {name:'Opera Game',players:'Morphy vs Duke of Brunswick',year:1858,uci:['e2e4','e7e5','g1f3','d7d6','d2d4','g8f6','f1c4','f8e7','b1c1','b8c6','d4d5','c6e5','c4b3','e5f3','d1f3','e8g8','c1e3','e7d6','e1c1','c8d7','c1b1','a8b8','d1d3','b7b5','a2a4','b5a4','b3a4','d8c8','a4c6','c8c6','d3d4','b8c8','d4b4','d7e6','b4b7','c6c2','b1a2','c2a2','a1a2']},
   {name:'Kasparov vs Topalov',players:'Kasparov vs Topalov',year:1999,uci:['d2d4','d7d6','g1f3','g8f6','c2c4','e7e5','d4e5','d6e5','f3g5','f8e7','g5f3','e8g8','b1c3','c7c6','e2e3','h7h6','f1e2','d8c7','e1g1','f6d7','b2b3','g7g6','c1b2','f8g8','a1c1','d7f6','d1d2','g6g5','f1d1','a7a5']},
-  {name:'Game of the Century',players:'Bobby Fischer vs Donald Byrne',year:1956,uci:['g1f3','g8f6','c2c4','e7e6','g2g3','d7d5','f1g2','f8e7','e1g1','e8g8','d2d4','b8c6','c1f4','d5c4','d1b3','e6e5','f4e5','c6e5','f3e5','d8d4','e5f3','d4e4','b1d2','c8e6','b3c3','e4c6','a1c1','f6e4','c3e4','c6e4','d2f3','e7c5'},
+  {name:'Game of the Century',players:'Bobby Fischer vs Donald Byrne',year:1956,uci:['g1f3','g8f6','c2c4','e7e6','g2g3','d7d5','f1g2','f8e7','e1g1','e8g8','d2d4','b8c6','c1f4','d5c4','d1b3','e6e5','f4e5','c6e5','f3e5','d8d4','e5f3','d4e4','b1d2','c8e6','b3c3','e4c6','a1c1','f6e4','c3e4','c6e4','d2f3','e7c5']},
   {name:'Botev Immortal',players:'Botev vs Popov',year:1882,uci:['e2e4','e7e5','g1f3','b8c6','f1c4','f8c5','b2b4','c5b4','c2c3','b4a5','e1g1','d7d6','d2d4','c8g4','a2a4','g4f3','d1f3','g8f6','f3b7','a8b8','c4f7','e8f8','b7d5']},
   {name:'Scholar Mate Demo',players:'Classic beginner pattern',year:0,uci:['e2e4','e7e5','f1c4','b8c6','d1h5','g8f6','h5f7']},
   {name:'Fried Liver Attack',players:'Classic opening trap',year:0,uci:['e2e4','e7e5','g1f3','b8c6','f1c4','g8f6','f3g5','d7d5','e4d5','f6d5','g5f7','e8f8','d1f3']},
@@ -819,15 +819,16 @@ function handleAnalysisClick(e){
   }}
 }
 function setPieceInFEN(fen,r,c,piece){
-  var rows=fen.split(' ');var board=rows[0].split('/');
-  var row=board[r];var col=0;var newRow='';
+  var parts=fen.split(' ');var boardParts=parts[0].split('/');
+  var row=boardParts[r];var col=0;var newRow='';
   for(var i=0;i<row.length;i++){
-    if(row[i]>='1'&&row[i]<='8'){var count=parseInt(row[i]);for(var j=0;j<count;j++){if(col===c){newRow+=piece||'1';}else{newRow+=row[i];}col++;if(j<count-1){newRow='';}}}
-    else{if(col===c){newRow+=piece||'1';}else{newRow+=row[i];}col++;}
+    if(row[i]>='1'&&row[i]<='8'){
+      var count=parseInt(row[i]);
+      for(var j=0;j<count;j++){newRow+=(col===c)?(piece||'1'):'1';col++;}
+    }else{newRow+=(col===c)?(piece||'1'):row[i];col++;}
   }
-  if(col===c)newRow+=piece||'1';
-  rows[0]=board.slice(0,r).join('/')+'/'+newRow+'/'+board.slice(r+1).join('/');
-  return rows.join(' ');
+  boardParts[r]=newRow;parts[0]=boardParts.join('/');
+  return parts.join(' ');
 }
 
 function handlePuzzleClick(e){
@@ -972,11 +973,11 @@ var PUZZLE_TEMPLATES=[
   {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/4P3/3P1N2/PPP1NPPP/RNBQKB1R w KQkq - 0 4',bestUci:'c1g5',goal:'Pin the knight!',rating:1200},
   {fen:'2r1r1k1/5ppp/p7/1p6/8/8/PPP2PPP/1R2R1K1 w - - 0 1',bestUci:'e1e8',goal:'Control the back rank!',rating:1350},
   {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 4',bestUci:'f3e5',goal:'Knight in the center!',rating:1250},
-  {fen:'rnbqkbnr/pppppppp/8/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 1',bestUci:'e7e5',bestUci:'e7e5',goal:'Counter in the center!',rating:1050},
+  {fen:'rnbqkbnr/pppppppp/8/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 1',bestUci:'e7e5',goal:'Counter in the center!',rating:1050},
   {fen:'r1bq1rk1/ppp2ppp/2np4/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 6',bestUci:'c3d5',goal:'Knight outpost!',rating:1400},
   {fen:'r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 4 4',bestUci:'e5f7',goal:'Fork king and queen!',rating:1500},
   {fen:'r2qkb1r/pp2pppp/2n2n2/2pp1b2/2PP4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 0 5',bestUci:'c4d5',goal:'Win a pawn!',rating:1150},
-  {fen:'r1bqk2r/ppppnppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4',bestUci:'f3e5',bestUci:'f3e5',goal:'Centralize the knight!',rating:1250},
+  {fen:'r1bqk2r/ppppnppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4',bestUci:'f3e5',goal:'Centralize the knight!',rating:1250},
   {fen:'r1bq1rk1/ppp2ppp/2n2n2/3p4/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQ - 0 7',bestUci:'e4d5',goal:'Win the pawn!',rating:1200},
   {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP1NPPP/RNBQK2R w KQkq - 0 5',bestUci:'c1g5',goal:'Develop with a pin!',rating:1200}
 ];
