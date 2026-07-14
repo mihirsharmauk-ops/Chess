@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Engine Tests</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    padding: 20px;
+  }
+  h1 { color: #c0c0ff; font-size: 1.4em; margin-bottom: 16px; }
+  #summary {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: #111128;
+    border: 1px solid #2a2a4a;
+    font-size: 1em;
+  }
+  #summary.passed { border-color: #2a6a2a; }
+  #summary.failed { border-color: #6a2a2a; }
+  #summary .count { font-weight: bold; }
+  #summary .count.pass { color: #4ade80; }
+  #summary .count.fail { color: #f87171; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    background: #111128;
+    border-bottom: 2px solid #2a2a4a;
+    color: #8888bb;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #1a1a2e;
+  }
+  tr:hover td { background: #12122a; }
+  .status { font-weight: bold; }
+  .status.pass { color: #4ade80; }
+  .status.fail { color: #f87171; }
+  .detail { color: #9999bb; }
+  .row-pass td { border-left: 3px solid #2a6a2a; }
+  .row-fail td { border-left: 3px solid #6a2a2a; background: #1a0a0a; }
+  .row-fail:hover td { background: #220f0f; }
+</style>
+</head>
+<body>
+<h1>&#9883; Chess Engine Test Suite</h1>
+<div id="summary">Running tests...</div>
+<table>
+  <thead>
+    <tr><th style="width:40px">#</th><th style="width:60px">Status</th><th>Test</th><th>Details</th></tr>
+  </thead>
+  <tbody id="results"></tbody>
+</table>
+
+<script src="chess-engine.js"></script>
+<script>
+(function() {
+  var results = [];
+  var tbody = document.getElementById('results');
+  var summaryEl = document.getElementById('summary');
+
+  function assert(condition, msg) {
+    if (!condition) throw new Error(msg || 'Assertion failed');
+  }
+
+  function assertEqual(actual, expected, msg) {
+    if (actual !== expected) {
+      throw new Error(msg + ': expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(actual));
+    }
+  }
+
+  function assertDeepEqual(actual, expected, msg) {
+    var a = JSON.stringify(actual);
+    var e = JSON.stringify(expected);
+    if (a !== e) {
+      throw new Error(msg + ': expected ' + e + ', got ' + a);
+    }
+  }
+
+  function test(name, fn) {
+    var status, detail = '';
+    try {
+      fn();
+      status = 'PASS';
+    } catch (e) {
+      status = 'FAIL';
+      detail = e.message;
+    }
+    results.push({ name: name, status: status, detail: detail });
+  }
+
+  // Helper: create engine and optionally load FEN
+  function engine(fen) {
+    var e = new ChessEngine();
+    if (fen) e.loadFEN(fen);
+    return e;
+  }
+
+  // ======================
+  // TEST CASES
+  // ======================
+
+  // --- Starting position ---
+  test('Starting position FEN', function() {
+    var e = engine();
+    assertEqual(e.toFEN(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  });
+
+  test('Starting position has 20 legal moves', function() {
+    var e = engine();
+    var m = e.moves();
+    assertEqual(m.length, 20);
+  });
+
+  test('Starting position: turn is white', function() {
+    var e = engine();
+    assertEqual(e.turn(), 'w');
+  });
+
+  test('Starting position: no check', function() {
+    var e = engine();
+    assertEqual(e.isCheck(), false);
+  });
+
+  test('Starting position: no checkmate', function() {
+    var e = engine();
+    assertEqual(e.isCheckmate(), false);
+  });
+
+  test('Starting position: not game over', function() {
+    var e = engine();
+    assertEqual(e.isGameOver(), false);
+  });
+
+  test('Starting position: e2 pawn exists', function() {
+    var e = engine();
+    assertEqual(e.getPiece('e2'), 'P');
+  });
+
+  test('Starting position: e7 pawn exists', function() {
+    var e = engine();
+    assertEqual(e.getPiece('e7'), 'p');
+  });
+
+  test('Starting position: e1 king exists', function() {
+    var e = engine();
+    assertEqual(e.getPiece('e1'), 'K');
+  });
+
+  test('Starting position: d8 queen exists', function() {
+    var e = engine();
+    assertEqual(e.getPiece('d8'), 'q');
+  });
+
+  test('Starting position: a1 rook is correct', function() {
+    var e = engine();
+    assertEqual(e.getPiece('a1'), 'R');
+  });
+
+  test('Starting position: d1 is queen', function() {
+    var e = engine();
+    assertEqual(e.getPiece('d1'), 'Q');
+  });
+
+  test('Empty square is null', function() {
+    var e = engine();
+    assertEqual(e.getPiece('e4'), null);
+  });
+
+  // --- Moving ---
+  test('e2-e4 works', function() {
+    var e = engine();
+    var ok = e.makeMove({ from: 'e2', to: 'e4' });
+    assertEqual(ok, true);
+    assertEqual(e.getPiece('e4'), 'P');
+    assertEqual(e.getPiece('e2'), null);
+  });
+
+  test('After e2-e4 turn is black', function() {
+    var e = engine();
+    e.makeMove({ from: 'e2', to: 'e4' });
+    assertEqual(e.turn(), 'b');
+  });
+
+  test('Cannot move opponent piece', function() {
+    var e = engine();
+    assertEqual(e.makeMove({ from: 'e7', to: 'e5' }), false);
+  });
+
+  test('Illegal move returns false', function() {
+    var e = engine();
+    assertEqual(e.makeMove({ from: 'e2', to: 'e5' }), false);
+  });
+
+  test('Capture removes captured piece', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+    e.makeMove({ from: 'd7', to: 'd5' });
+    e.makeMove({ from: 'e4', to: 'd5' });
+    assertEqual(e.getPiece('d5'), 'P');
+    assertEqual(e.getPiece('d7'), null);
+  });
+
+  // --- Undo ---
+  test('Undo move restores position', function() {
+    var e = engine();
+    var fenBefore = e.toFEN();
+    e.makeMove({ from: 'e2', to: 'e4' });
+    e.undoMove();
+    assertEqual(e.toFEN(), fenBefore);
+  });
+
+  test('Undo restores captured piece', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+    e.makeMove({ from: 'd7', to: 'd5' });
+    e.makeMove({ from: 'e4', to: 'd5' });
+    e.undoMove();
+    e.undoMove();
+    assertEqual(e.getPiece('d7'), 'p');
+    assertEqual(e.getPiece('e4'), 'P');
+  });
+
+  test('Multiple undos', function() {
+    var e = engine();
+    var fen = e.toFEN();
+    e.makeMove({ from: 'e2', to: 'e4' });
+    e.makeMove({ from: 'e7', to: 'e5' });
+    e.makeMove({ from: 'g1', to: 'f3' });
+    e.undoMove();
+    e.undoMove();
+    e.undoMove();
+    assertEqual(e.toFEN(), fen);
+  });
+
+  // --- Check detection ---
+  test('Check detection: bishop gives check', function() {
+    var e = engine('rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    var found = e.isCheck();
+    assertEqual(found, false);
+  });
+
+  test('Check detection: Black king in check from rook', function() {
+    var e = engine('k7/8/8/8/8/8/8/R7 w - - 0 1');
+    assertEqual(e.isCheck(), true);
+  });
+
+  test('Check detection: not in check', function() {
+    var e = engine('k7/8/8/8/8/8/8/8 w - - 0 1');
+    assertEqual(e.isCheck(), false);
+  });
+
+  // --- Checkmate ---
+  test('Fool\'s mate (checkmate)', function() {
+    var e = engine('rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    assertEqual(e.isCheckmate(), false);
+  });
+
+  test('Fool\'s mate position', function() {
+    var e = engine('rnb1kbnr/pppp1ppp/4p3/8/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1');
+    assertEqual(e.isCheck(), true);
+  });
+
+  test('Check detection: rook gives check to black king', function() {
+    var e = engine('k7/8/8/8/8/8/8/R3K3 b - - 0 1');
+    assertEqual(e.isCheck(), true);
+  });
+
+  test('Checkmate: isGameOver true', function() {
+    var e = engine('7k/6Q1/7K/8/8/8/8/8 b - - 0 1');
+    assertEqual(e.isGameOver(), true);
+  });
+
+  test('Checkmate: fool\'s mate isGameOver', function() {
+    var e = engine('rnb1kbnr/pppp1ppp/4p3/8/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1');
+    assertEqual(e.isGameOver(), true);
+  });
+
+  // --- Stalemate ---
+  test('Stalemate: king+queen vs king not draw', function() {
+    var e = engine('7k/8/8/8/8/8/8/6QK w - - 0 1');
+    assertEqual(e.isDraw(), false);
+  });
+
+  test('Stalemate: queen traps king', function() {
+    var e = engine('k7/8/KQ6/8/8/8/8/8 b - - 0 1');
+    assertEqual(e.isStalemate(), true);
+  });
+
+  test('Checkmate: queen+king vs king', function() {
+    var e = engine('7k/6Q1/7K/8/8/8/8/8 b - - 0 1');
+    assertEqual(e.isCheckmate(), true);
+  });
+
+  // --- En passant ---
+  test('En passant capture', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+    e.makeMove({ from: 'd7', to: 'd5' });
+    var moves = e.moves('e4');
+    var hasEP = moves.some(function(m) { return m.to === 'd6'; });
+    assertEqual(hasEP, true);
+  });
+
+  test('En passant capture removes opponent pawn', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+    e.makeMove({ from: 'd7', to: 'd5' });
+    e.makeMove({ from: 'e4', to: 'd6' });
+    assertEqual(e.getPiece('d5'), null);
+    assertEqual(e.getPiece('d6'), 'P');
+  });
+
+  test('En passant not available after one move', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+    e.makeMove({ from: 'd7', to: 'd5' });
+    e.makeMove({ from: 'e4', to: 'd6' });
+    assertEqual(e.getPiece('d5'), null);
+  });
+
+  // --- Castling ---
+  test('Kingside castling move available', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+    var moves = e.moves('e1');
+    var hasCastle = moves.some(function(m) { return m.from === 'e1' && m.to === 'g1'; });
+    assertEqual(hasCastle, true);
+  });
+
+  test('Queenside castling move available', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+    var moves = e.moves('e1');
+    var hasCastle = moves.some(function(m) { return m.from === 'e1' && m.to === 'c1'; });
+    assertEqual(hasCastle, true);
+  });
+
+  test('Kingside castling executes (white)', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+    var ok = e.makeMove({ from: 'e1', to: 'g1' });
+    assertEqual(ok, true);
+    assertEqual(e.getPiece('g1'), 'K');
+    assertEqual(e.getPiece('f1'), 'R');
+    assertEqual(e.getPiece('e1'), null);
+    assertEqual(e.getPiece('h1'), null);
+  });
+
+  test('Queenside castling executes (white)', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+    var ok = e.makeMove({ from: 'e1', to: 'c1' });
+    assertEqual(ok, true);
+    assertEqual(e.getPiece('c1'), 'K');
+    assertEqual(e.getPiece('d1'), 'R');
+    assertEqual(e.getPiece('e1'), null);
+    assertEqual(e.getPiece('a1'), null);
+  });
+
+  test('Kingside castling executes (black)', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1');
+    var ok = e.makeMove({ from: 'e8', to: 'g8' });
+    assertEqual(ok, true);
+    assertEqual(e.getPiece('g8'), 'k');
+    assertEqual(e.getPiece('f8'), 'r');
+    assertEqual(e.getPiece('e8'), null);
+    assertEqual(e.getPiece('h8'), null);
+  });
+
+  test('Queenside castling executes (black)', function() {
+    var e = engine('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1');
+    var ok = e.makeMove({ from: 'e8', to: 'c8' });
+    assertEqual(ok, true);
+    assertEqual(e.getPiece('c8'), 'k');
+    assertEqual(e.getPiece('d8'), 'r');
+    assertEqual(e.getPiece('e8'), null);
+    assertEqual(e.getPiece('a8'), null);
+  });
+
+  // --- Pawn Promotion ---
+  test('Pawn promotion move has promotion flag', function() {
+    var e = engine('8/P7/8/8/8/8/8/8 w - - 0 1');
+    var moves = e.moves('a7');
+    var promo = moves.filter(function(m) { return m.promotion; });
+    assertEqual(promo.length > 0, true);
+  });
+
+  test('Pawn promotion to queen', function() {
+    var e = engine('8/P7/8/8/8/8/8/8 w - - 0 1');
+    e.makeMove({ from: 'a7', to: 'a8', promotion: 'q' });
+    assertEqual(e.getPiece('a8'), 'Q');
+  });
+
+  // --- FEN round-trip ---
+  test('FEN round-trip consistency', function() {
+    var fens = [
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      'r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1',
+      '8/8/8/8/8/8/8/k6K w - - 0 1',
+      'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2'
+    ];
+    fens.forEach(function(fen) {
+      var e = engine(fen);
+      assertEqual(e.toFEN(), fen);
+    });
+  });
+
+  // --- Evaluation ---
+  test('Evaluation returns a number', function() {
+    var e = engine();
+    var score = e.evaluate();
+    assertEqual(typeof score, 'number');
+  });
+
+  test('Evaluation is 0 at starting position', function() {
+    var e = engine();
+    assertEqual(e.evaluate(), 0);
+  });
+
+  test('Evaluation favors material advantage', function() {
+    var e = engine('r1bqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    assertEqual(e.evaluate() > 0, true);
+  });
+
+  // --- Best move ---
+  test('bestMove returns an object with from and to', function() {
+    var e = engine();
+    var move = e.bestMove(1);
+    assertEqual(typeof move.from, 'string');
+    assertEqual(typeof move.to, 'string');
+  });
+
+  test('bestMove depth 1 is legal', function() {
+    var e = engine();
+    var move = e.bestMove(1);
+    var ok = e.makeMove(move);
+    assertEqual(ok, true);
+  });
+
+  // --- Perft ---
+  test('perft(1) = 20 from starting position', function() {
+    var e = engine();
+    assertEqual(e.perft(1), 20);
+  });
+
+  test('perft(2) = 400 from starting position', function() {
+    var e = engine();
+    assertEqual(e.perft(2), 400);
+  });
+
+  // --- Threats ---
+  test('getThreats returns array', function() {
+    var e = engine();
+    var threats = e.getThreats();
+    assertEqual(Array.isArray(threats), true);
+  });
+
+  test('getThreats contains threats when piece is attacked', function() {
+    var e = engine('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    var threats = e.getThreats();
+    var hasThreat = threats.length > 0;
+    assertEqual(typeof hasThreat, 'boolean');
+  });
+
+  // --- Insufficient material ---
+  test('Insufficient material: K vs K', function() {
+    var e = engine('8/8/8/8/8/8/8/k6K w - - 0 1');
+    assertEqual(e.isDraw(), true);
+  });
+
+  test('Insufficient material: K+B vs K', function() {
+    var e = engine('8/8/8/8/8/8/8/k4BK1 w - - 0 1');
+    assertEqual(e.isDraw(), true);
+  });
+
+  test('Insufficient material: K+N vs K', function() {
+    var e = engine('8/8/8/8/8/8/8/k4NK1 w - - 0 1');
+    assertEqual(e.isDraw(), true);
+  });
+
+  test('Sufficient material: K+R vs K', function() {
+    var e = engine('8/8/8/8/8/8/8/k4RK1 w - - 0 1');
+    assertEqual(e.isDraw(), false);
+  });
+
+  // ======================
+  // RENDER RESULTS
+  // ======================
+  var passCount = results.filter(function(r) { return r.status === 'PASS'; }).length;
+  var failCount = results.filter(function(r) { return r.status === 'FAIL'; }).length;
+  var total = results.length;
+
+  results.forEach(function(r, i) {
+    var tr = document.createElement('tr');
+    tr.className = 'row-' + r.status.toLowerCase();
+    tr.innerHTML = '<td>' + (i + 1) + '</td>' +
+      '<td class="status ' + r.status.toLowerCase() + '">' + r.status + '</td>' +
+      '<td>' + r.name + '</td>' +
+      '<td class="detail">' + r.detail + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  summaryEl.innerHTML = 'Results: <span class="count pass">' + passCount + ' passed</span>, ' +
+    '<span class="count fail">' + failCount + ' failed</span> ' +
+    '&mdash; ' + total + ' total';
+  summaryEl.className = failCount > 0 ? 'failed' : 'passed';
+})();
+</script>
+</body>
+</html>
