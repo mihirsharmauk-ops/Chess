@@ -226,9 +226,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
 #debugLog{position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.9);color:#0f0;font-family:monospace;font-size:11px;padding:8px;z-index:9999;display:none}
 #tutorialScreen{align-items:center}
-.tutorial-container{max-width:900px;width:100%;padding:16px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-.tutorial-board-section{display:flex;flex-direction:column;align-items:center;min-width:0}
-.tutorial-info{width:min(400px,calc(100vw - 80px));min-width:280px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 120px);overflow-y:auto}
+.tutorial-container{max-width:1100px;width:100%;padding:16px;display:flex;gap:20px;align-items:flex-start}
+.tutorial-board-section{display:flex;flex-direction:column;align-items:center;min-width:0;flex-shrink:0}
+.tutorial-info{flex:1;min-width:280px;display:flex;flex-direction:column;gap:12px}
 .tutorial-info .panel-card{font-size:14px;line-height:1.7}
 .tutorial-info .panel-card h3{margin-bottom:8px}
 .tutorial-info .panel-card p{color:#ccc;margin-bottom:10px}
@@ -281,7 +281,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
 .training-settings{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .training-settings label{display:flex;align-items:center;gap:6px;font-size:12px;color:#888;cursor:pointer}
 .training-settings input[type=checkbox]{accent-color:#7c5cff}
-@media(max-width:860px){.tutorial-container,.training-container{flex-direction:column;align-items:center}.tutorial-info,.training-info{width:min(90vw,480px);max-height:none}}
+@media(max-width:860px){.tutorial-container,.training-container{flex-direction:column;align-items:center}.tutorial-info,.training-info{width:min(90vw,480px);max-height:none;overflow-y:visible}}
 @media(max-width:860px){.game-container,.analysis-container{flex-direction:column;align-items:center}.player-bar{width:min(90vw,480px)}.board-wrap{width:min(90vw,480px);height:min(90vw,480px)}.side-panel,.analysis-side{width:min(90vw,480px);max-height:none}.puzzle-board-section{width:100%}.puzzle-info{width:100%;max-height:none}}
 </style>
 </head>
@@ -497,7 +497,7 @@ function showScreen(name){
   else if(name==='puzzle')setTimeout(function(){drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),getLastPuzzleMove());},10);
   else if(name==='leaderboard')renderLeaderboard();
   else if(name==='analysis')setTimeout(function(){drawBoardAnalysis();renderAnalysisMoveList();},10);
-  else if(name==='tutorial')setTimeout(function(){var eng=new ChessEngine();drawBoard(eng,document.getElementById('tutorialCanvas'),null);},10);
+  else if(name==='tutorial')setTimeout(function(){var tCanvas=document.getElementById('tutorialCanvas');tCanvas.onclick=handleTutorialClick;tCanvas.onmousedown=function(e){e.preventDefault();handleTutorialDragStart(e);};if(tutState.lessons.length===0){tutBoardEng=new ChessEngine();tutBoardEng.loadFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');}tutDrawBoard();},10);
   else if(name==='training')setTimeout(function(){drawTrainingBoard();},10);
 }
 function getLastGameMove(){return gameMoveHistory.length>0?gameMoveHistory[gameMoveHistory.length-1]:null;}
@@ -509,7 +509,7 @@ function drawPiece(ctx,piece,x,y,sq,isDragging,theme){if(!piece)return;var pt=PI
 function drawBoard(engine,canvas,lastMove,opts){
   if(!canvas||!canvas.width)return;var ctx=canvas.getContext('2d');var W=canvas.width,sq=W/8;var theme=BOARD_THEMES[currentTheme];var light=theme.light,dark=theme.dark;
   var highlightColor='rgba(124,92,255,0.45)',lastMoveColor='rgba(124,92,255,0.2)';var checkColor='rgba(255,50,50,0.45)';
-  var isAnalysis=opts&&opts.analysis;var flipped=isAnalysis?analysisFlipped:(canvas.id==='trainingCanvas'?trainingFlipped:boardFlipped);
+  var isAnalysis=opts&&opts.analysis;var flipped=isAnalysis?analysisFlipped:(canvas.id==='trainingCanvas'?trainingFlipped:(canvas.id==='tutorialCanvas'?false:boardFlipped));
   var boardData=fenToBoard(engine.toFEN());
   var kingSquare=null;
   if(engine.isCheck()){var side=engine.turn();var kPiece=side==='w'?'K':'k';for(var kr=0;kr<8;kr++){for(var kc=0;kc<8;kc++){if(boardData[kr]&&boardData[kr][kc]===kPiece){kingSquare=FILES[kc]+(8-kr);}}}}
@@ -519,9 +519,10 @@ function drawBoard(engine,canvas,lastMove,opts){
     if(lastMove){var fromR=8-parseInt(lastMove.from[1]),fromC=FILES.indexOf(lastMove.from[0]);var toR2=8-parseInt(lastMove.to[1]),toC2=FILES.indexOf(lastMove.to[0]);if((r===fromR&&c===fromC)||(r===toR2&&c===toC2)){ctx.fillStyle=lastMoveColor;ctx.fillRect(x,y,sq,sq);}}
     var sqName=FILES[c]+(8-r);
     if(sqName===kingSquare){ctx.fillStyle=checkColor;ctx.fillRect(x,y,sq,sq);}
-    var sel=isAnalysis?(opts&&opts.selectedSquare===sqName):((canvas.id==='trainingCanvas'?(trainingSelectedSquare===sqName):(selectedSquare===sqName))||(dragState.fromSquare===sqName&&canvas.id===dragState.canvasId));
+    var tutSel=canvas.id==='tutorialCanvas'?tutSelectedSquare===sqName:(selectedSquare===sqName);
+var sel=isAnalysis?(opts&&opts.selectedSquare===sqName):((canvas.id==='trainingCanvas'?(trainingSelectedSquare===sqName):tutSel)||(dragState.fromSquare===sqName&&canvas.id===dragState.canvasId));
     if(sel){ctx.fillStyle=highlightColor;ctx.fillRect(x,y,sq,sq);}
-    var moves=isAnalysis?(opts?opts.legalMoves||[]:[]):(canvas.id==='boardCanvas'?legalMovesForPiece:(canvas.id==='trainingCanvas'?trainingLegalMoves:pzLegalMoves));
+    var moves=isAnalysis?(opts?opts.legalMoves||[]:[]):(canvas.id==='boardCanvas'?legalMovesForPiece:(canvas.id==='trainingCanvas'?trainingLegalMoves:(canvas.id==='tutorialCanvas'?tutLegalMovesForPiece:pzLegalMoves)));
     if(moves.indexOf(sqName)!==-1){var pieceAtSq=boardData[r]&&boardData[r][c];if(pieceAtSq){ctx.beginPath();ctx.arc(x+sq/2,y+sq/2,sq/2-4,0,Math.PI*2);ctx.strokeStyle='rgba(124,92,255,0.6)';ctx.lineWidth=4;ctx.stroke();}else{ctx.beginPath();ctx.arc(x+sq/2,y+sq/2,sq/8,0,Math.PI*2);ctx.fillStyle='rgba(124,92,255,0.5)';ctx.fill();}}
     var piece=boardData[r]&&boardData[r][c];if(piece){if(dragState.active&&dragState.fromSquare===sqName&&canvas.id===dragState.canvasId)continue;drawPiece(ctx,piece,x,y,sq,false);}
   }}
@@ -551,7 +552,7 @@ function toggleAuthMode(){authMode=authMode==='signin'?'signup':'signin';updateA
 function handleAuth(){var email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,errEl=document.getElementById('authError');if(!email||!password){errEl.textContent='Please fill in all fields';errEl.style.display='block';errEl.className='auth-error';return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errEl.textContent='Please enter a valid email';errEl.style.display='block';errEl.className='auth-error';return;}if(password.length<6){errEl.textContent='Password must be at least 6 characters';errEl.style.display='block';errEl.className='auth-error';return;}if(supabaseClient){var opts={email:email,password:password};if(authMode==='signup'){var username=document.getElementById('authUsername').value.trim()||email.split('@')[0];opts.options={data:{username:username}};}var authCall=authMode==='signup'?supabaseClient.auth.signUp(opts):supabaseClient.auth.signInWithPassword({email:email,password:password});authCall.then(function(result){if(result.error){errEl.textContent=result.error.message;errEl.style.display='block';errEl.className='auth-error';return;}if(authMode==='signup'&&result.data&&result.data.user&&!result.data.user.confirmed_at){errEl.textContent='Check your email for a confirmation link!';errEl.style.display='block';errEl.className='auth-error success';return;}var username=(result.data&&result.data.user&&result.data.user.user_metadata&&result.data.user.user_metadata.username)||email.split('@')[0];var users=JSON.parse(localStorage.getItem('chess_users')||'{}');if(!users[username]){users[username]={email:email,rating:1200,puzzleRating:1200,wins:0,draws:0,losses:0,streak:0,bestStreak:0,puzzleStreak:0,puzzleBestStreak:0,games:[],puzzles:{solved:0,attempted:0}};}localStorage.setItem('chess_users',JSON.stringify(users));currentUser=users[username];currentUser.username=username;currentUser.email=email;localStorage.setItem('chess_current',username);closeAuthModal();updateUserInfo();}).catch(function(e){errEl.textContent=e.message||'Auth failed';errEl.style.display='block';errEl.className='auth-error';});}else{var users=JSON.parse(localStorage.getItem('chess_users')||'{}');var localKey=email.split('@')[0];if(authMode==='signup'){if(users[localKey]){errEl.textContent='Account already exists';errEl.style.display='block';errEl.className='auth-error';return;}users[localKey]={email:email,password:password,rating:1200,puzzleRating:1200,wins:0,draws:0,losses:0,streak:0,bestStreak:0,puzzleStreak:0,puzzleBestStreak:0,games:[],puzzles:{solved:0,attempted:0}};localStorage.setItem('chess_users',JSON.stringify(users));currentUser=users[localKey];currentUser.username=localKey;}else{if(!users[localKey]){errEl.textContent='Account not found';errEl.style.display='block';errEl.className='auth-error';return;}if(users[localKey].password!==password){errEl.textContent='Wrong password';errEl.style.display='block';errEl.className='auth-error';return;}currentUser=users[localKey];currentUser.username=localKey;}localStorage.setItem('chess_current',localKey);closeAuthModal();updateUserInfo();}}
 function authSignOut(){if(supabaseClient){supabaseClient.auth.signOut().then(function(){currentUser=null;localStorage.removeItem('chess_current');updateUserInfo();if(timerInterval)clearInterval(timerInterval);timerInterval=null;gameActive=false;});}else{currentUser=null;localStorage.removeItem('chess_current');updateUserInfo();if(timerInterval)clearInterval(timerInterval);timerInterval=null;gameActive=false;}}
 function updateUserInfo(){var isLoggedIn=currentUser!==null,name=isLoggedIn?currentUser.username:'',rating=isLoggedIn?currentUser.rating:1200;var sets=[{un:'topUsername',rt:'topRating',lo:'logoutBtn',si:'signinBtn'},{un:'lbTopUsername',rt:'lbTopRating',lo:'logoutBtn2',si:'signinBtn2'},{un:'pzTopUsername',rt:'pzTopRating',lo:'logoutBtn3',si:'signinBtn3'}];for(var i=0;i<sets.length;i++){var s=sets[i];document.getElementById(s.un).textContent=name;document.getElementById(s.rt).textContent=rating;document.getElementById(s.un).style.display=isLoggedIn?'':'none';document.getElementById(s.rt).style.display=isLoggedIn?'':'none';document.getElementById(s.lo).style.display=isLoggedIn?'':'none';document.getElementById(s.si).style.display=isLoggedIn?'none':'';}document.getElementById('pzRating').textContent=puzzleRating;}
-function getSquareFromEvent(e,canvas){var rect=canvas.getBoundingClientRect();var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;var sq=canvas.width/8;var c=Math.floor(mx/sq),r=Math.floor(my/sq);var flipped=canvas.id==='analysisCanvas'?analysisFlipped:(canvas.id==='trainingCanvas'?trainingFlipped:boardFlipped);if(flipped){c=7-c;r=7-r;}return FILES[c]+(8-r);}
+function getSquareFromEvent(e,canvas){var rect=canvas.getBoundingClientRect();var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;var sq=canvas.width/8;var c=Math.floor(mx/sq),r=Math.floor(my/sq);var flipped=canvas.id==='analysisCanvas'?analysisFlipped:(canvas.id==='trainingCanvas'?trainingFlipped:(canvas.id==='tutorialCanvas'?false:boardFlipped));if(flipped){c=7-c;r=7-r;}return FILES[c]+(8-r);}
 function getPixelFromEvent(e,canvas){var rect=canvas.getBoundingClientRect();var scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};}
 
 function handleGameClick(e){if(viewMoveIndex!==-1)return;if(chess.isGameOver()||!gameActive)return;if(gameMode!=='friend'&&chess.turn()!==playerColor)return;var squareName=getSquareFromEvent(e,document.getElementById('boardCanvas'));if(selectedSquare){var moves=chess.moves(selectedSquare);var target=null;for(var i=0;i<moves.length;i++){if(moves[i].to===squareName){target=moves[i];break;}}if(target){if(target.promotion){pendingPromotion={from:selectedSquare,to:squareName};showPromotionDialog(chess.turn());return;}executeGameMove(selectedSquare,squareName);return;}selectedSquare=null;legalMovesForPiece=[];}var boardData=fenToBoard(chess.toFEN());var r=8-parseInt(squareName[1]),c=FILES.indexOf(squareName[0]);var piece=boardData[r]&&boardData[r][c];if(piece){var isWhite=piece===piece.toUpperCase();if(gameMode==='friend'||(playerColor==='w'&&isWhite)||(playerColor==='b'&&!isWhite)){selectedSquare=squareName;var pMoves=chess.moves(squareName);legalMovesForPiece=[];for(var j=0;j<pMoves.length;j++)legalMovesForPiece.push(pMoves[j].to);}}drawBoard(chess,document.getElementById('boardCanvas'),getLastGameMove());}
@@ -822,12 +823,12 @@ drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),null);
 
 var TUTORIAL_LESSONS={
 beginner:[
-{id:'b1',title:'The King',content:'<p>The King is the most important piece. If it\'s checkmated, you lose!</p><p><span class="highlight">Movement:</span> The King moves one square in any direction — horizontally, vertically, or diagonally.</p><p><span class="highlight">Castling:</span> The King can also castle with a Rook — moving two squares toward the Rook, while the Rook jumps to the other side. This can only happen if neither piece has moved, the path is clear, and the King is not in check.</p><p>Try clicking the King and moving it one square!</p>',fen:'4k3/8/8/8/4K3/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b2',title:'The Queen',content:'<p>The Queen is the most powerful piece on the board.</p><p><span class="highlight">Movement:</span> She can move any number of squares in any direction — horizontally, vertically, or diagonally.</p><p>The Queen combines the power of the Rook and Bishop. Use her wisely — she\'s worth about 9 pawns!</p>',fen:'4k3/8/8/3Q4/8/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
-{id:'b3',title:'The Rook',content:'<p>The Rook is a powerful piece worth about 5 pawns.</p><p><span class="highlight">Movement:</span> The Rook moves any number of squares horizontally or vertically.</p><p>Rooks are strongest on open files (columns with no pawns) and on the 7th rank where they can attack pawns.</p>',fen:'4k3/8/8/4R3/8/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
-{id:'b4',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. This is why the "bishop pair" (having both bishops) is valuable — together they cover all squares.</p>',fen:'4k3/8/8/4B3/8/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
-{id:'b5',title:'The Knight',content:'<p>The Knight is the trickiest piece!</p><p><span class="highlight">Movement:</span> The Knight moves in an "L" shape — two squares in one direction and then one square perpendicular. It\'s the only piece that can jump over other pieces!</p><p>Knights are strongest in the center of the board where they can reach up to 8 squares. On the edge they\'re much weaker.</p>',fen:'4k3/8/8/4N3/8/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
-{id:'b6',title:'The Pawn',content:'<p>Pawns are the soul of chess. They\'re worth 1 point each.</p><p><span class="highlight">Movement:</span> Pawns move forward one square. On their first move, they can move forward two squares.</p><p><span class="highlight">Capturing:</span> Pawns capture diagonally forward — one square to the left or right.</p><p><span class="highlight">En Passant:</span> A special capture when an enemy pawn moves two squares and lands beside your pawn.</p><p><span class="highlight">Promotion:</span> When a pawn reaches the other end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight.</p>',fen:'4k3/8/8/8/3P4/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
+{id:'b1',title:'The King',content:'<p>The King is the most important piece. If it\'s checkmated, you lose!</p><p><span class="highlight">Movement:</span> The King moves one square in any direction — horizontally, vertically, or diagonally.</p><p>Try clicking the King and moving it to different squares!</p>',fen:'8/8/8/4K3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b2',title:'The Queen',content:'<p>The Queen is the most powerful piece on the board.</p><p><span class="highlight">Movement:</span> She can move any number of squares in any direction — horizontally, vertically, or diagonally.</p><p>The Queen combines the power of the Rook and Bishop. Try moving her around!</p>',fen:'8/8/8/3Q4/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b3',title:'The Rook',content:'<p>The Rook is a powerful piece worth about 5 pawns.</p><p><span class="highlight">Movement:</span> The Rook moves any number of squares horizontally or vertically.</p><p>Rooks are strongest on open files (columns with no pawns) and on the 7th rank. Try moving it!</p>',fen:'8/8/8/4R3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b4',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. Try moving it!</p>',fen:'8/8/8/4B3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b5',title:'The Knight',content:'<p>The Knight is the trickiest piece!</p><p><span class="highlight">Movement:</span> The Knight moves in an "L" shape — two squares in one direction and then one square perpendicular. It\'s the only piece that can jump over other pieces!</p><p>Knights are strongest in the center of the board where they can reach up to 8 squares. Try moving it!</p>',fen:'8/8/8/4N3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b6',title:'The Pawn',content:'<p>Pawns are the soul of chess. They\'re worth 1 point each.</p><p><span class="highlight">Movement:</span> Pawns move forward one square. On their first move, they can move forward two squares.</p><p><span class="highlight">Capturing:</span> Pawns capture diagonally forward — one square to the left or right.</p><p><span class="highlight">Promotion:</span> When a pawn reaches the other end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight.</p><p>Try moving the pawn forward!</p>',fen:'8/8/8/3P4/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b7',title:'Board Setup',content:'<p>The board is set up with 8 rows (ranks) and 8 columns (files).</p><p><span class="highlight">Bottom row (for White):</span> Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook</p><p><span class="highlight">Second row:</span> All 8 pawns</p><p><span class="highlight">Memory trick:</span> "Queen on her own color" — the White Queen goes on a white square (d1), the Black Queen on a dark square (d8).</p><p>The board is always oriented so each player has a white (light) square in the bottom-right corner.</p>',fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null},
 {id:'b8',title:'Check and Checkmate',content:'<p><span class="highlight">Check:</span> When a King is attacked by an enemy piece, it\'s "in check." The player must deal with the check immediately by:</p><ul><li>Moving the King to safety</li><li>Capturing the attacking piece</li><li>Blocking the attack (not possible against a Knight or pawn)</li></ul><p><span class="highlight">Checkmate:</span> When the King is in check and there\'s no way to escape — that\'s checkmate! The game is over.</p><p><span class="warn">Common beginner mistake:</span> Not seeing that the opponent can capture your attacking piece to escape check.</p>',fen:'6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',highlight:null,exercise:{prompt:'White to play — can you deliver checkmate?',fen:'6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',solution:'e1e8',hint:'The back rank is undefended — slide the Rook to e8!'}},
 {id:'b9',title:'Stalemate',content:'<p><span class="warn">Stalemate</span> is a draw that occurs when:</p><ul><li>The player to move has <strong>no legal moves</strong></li><li>Their King is <strong>NOT in check</strong></li></ul><p>This is often a surprise for beginners who have a big material advantage but accidentally stalemate their opponent!</p><p><span class="good">Tip:</span> When you\'re winning, always make sure your opponent has at least one legal move.</p>',fen:'k7/8/1K6/8/8/8/8/8 w - - 0 1',highlight:null,exercise:null}
@@ -850,6 +851,14 @@ advanced:[
 {id:'a6',title:'Opening Repertoire',content:'<p>Having a planned opening repertoire gives you confidence in the first 10-15 moves.</p><p><span class="highlight">As White:</span></p><ul><li><strong>1.e4</strong> — Open, tactical games (Italian, Ruy Lopez, Scotch)</li><li><strong>1.d4</strong> — Positional, strategic games (Queen\'s Gambit, King\'s Indian)</li><li><strong>1.c4 / 1.Nf3</strong> — Flexible, transpositional</li></ul><p><span class="highlight">As Black vs 1.e4:</span></p><ul><li><strong>1...e5</strong> — Classical response (Open games)</li><li><strong>1...c5</strong> — Sicilian (asymmetrical, fighting chess)</li><li><strong>1...e6</strong> — French (solid)</li></ul><p><span class="good">Tip:</span> Study ideas, not just memorized moves. Understanding <em>why</em> moves are played matters more than memorization.</p>',fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null}
 ]
 };
+
+var tutBoardEng=new ChessEngine();tutBoardEng.loadFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+var tutSelectedSquare=null,tutLegalMovesForPiece=[];
+
+function tutDrawBoard(){drawBoard(tutBoardEng,document.getElementById('tutorialCanvas'),null);}
+function handleTutorialClick(e){var lesson=tutState.lessons[tutState.currentIdx];var square=getSquareFromEvent(e,document.getElementById('tutorialCanvas'));if(tutSelectedSquare){var moves=tutBoardEng.moves(tutSelectedSquare);var target=null;for(var i=0;i<moves.length;i++){if(moves[i].to===square){target=moves[i];break;}}if(target){if(target.promotion){tutBoardEng.makeMove(target);}else{tutBoardEng.makeMove(target);}tutSelectedSquare=null;tutLegalMovesForPiece=[];tutDrawBoard();checkTutorialExercise(target);return;}tutSelectedSquare=null;tutLegalMovesForPiece=[];}var boardData=fenToBoard(tutBoardEng.toFEN());var r=8-parseInt(square[1]),c=FILES.indexOf(square[0]);var piece=boardData[r]&&boardData[r][c];if(piece){var isWhite=piece===piece.toUpperCase();var turn=tutBoardEng.turn();if((turn==='w'&&isWhite)||(turn==='b'&&!isWhite)){tutSelectedSquare=square;var pMoves=tutBoardEng.moves(square);tutLegalMovesForPiece=[];for(var j=0;j<pMoves.length;j++)tutLegalMovesForPiece.push(pMoves[j].to);}}tutDrawBoard();}
+function handleTutorialDragStart(e){var canvas=document.getElementById('tutorialCanvas');var square=getSquareFromEvent(e,canvas);var boardData=fenToBoard(tutBoardEng.toFEN());var r=8-parseInt(square[1]),c=FILES.indexOf(square[0]);var piece=boardData[r]&&boardData[r][c];if(!piece)return;var isWhite=piece===piece.toUpperCase();var turn=tutBoardEng.turn();if(!((turn==='w'&&isWhite)||(turn==='b'&&!isWhite)))return;var pMoves=tutBoardEng.moves(square);if(pMoves.length===0)return;tutSelectedSquare=square;tutLegalMovesForPiece=[];for(var j=0;j<pMoves.length;j++)tutLegalMovesForPiece.push(pMoves[j].to);var pos=getPixelFromEvent(e,canvas);dragState={active:true,piece:piece,fromSquare:square,mx:pos.x,my:pos.y,canvasId:'tutorialCanvas'};canvas.style.cursor='grabbing';tutDrawBoard();}
+function checkTutorialExercise(moveObj){var lesson=tutState.lessons[tutState.currentIdx];if(!lesson.exercise||tutState.answered)return;var ex=lesson.exercise;if(moveObj.from===lesson.exercise.solution.substring(0,2)&&moveObj.to===lesson.exercise.solution.substring(2,4)){tutState.answered=true;tutState.correct++;tutState.assessmentScore++;tutState.assessmentTotal++;tutState.assessmentHistory.push(true);tutDrawBoard();var res=document.getElementById('tutExerciseResult');if(res){res.style.display='block';res.style.background='rgba(80,192,80,.15)';res.style.color='#50c050';res.innerHTML='&#10003; Correct!';}}else{tutState.wrong++;tutState.assessmentTotal++;tutState.assessmentHistory.push(false);var res=document.getElementById('tutExerciseResult');if(res){res.style.display='block';res.style.background='rgba(255,80,80,.15)';res.style.color='#ff5050';res.innerHTML='&#10007; Not quite — try again!';}tutSelectedSquare=null;tutLegalMovesForPiece=[];tutDrawBoard();}}
 
 var tutState={level:null,lessons:[],currentIdx:0,correct:0,wrong:0,answered:false,assessmentScore:0,assessmentTotal:0,assessmentHistory:[]};
 
@@ -884,8 +893,9 @@ var badge='<span class="tutorial-skill-badge '+tutState.level+'">'+tutState.leve
 document.getElementById('tutPlayerName').textContent='Lesson '+(tutState.currentIdx+1)+': '+lesson.title;
 document.getElementById('tutPrevBtn').disabled=(tutState.currentIdx===0);
 document.getElementById('tutNextBtn').textContent=(tutState.currentIdx===tutState.lessons.length-1)?'Finish \u2192':'Next \u2192';
-var tutEng=new ChessEngine();tutEng.loadFEN(lesson.fen);
-drawBoard(tutEng,document.getElementById('tutorialCanvas'),null);
+tutBoardEng=new ChessEngine();tutBoardEng.loadFEN(lesson.exercise?lesson.exercise.fen:lesson.fen);
+tutSelectedSquare=null;tutLegalMovesForPiece=[];
+tutDrawBoard();
 var html='<h3><span>&#9822;</span> '+lesson.title+badge+'</h3>'+lesson.content;
 if(lesson.exercise){
 html+='<div style="margin-top:12px;padding:12px;background:rgba(124,92,255,.08);border-radius:8px;border:1px solid rgba(124,92,255,.2)">';
@@ -898,30 +908,9 @@ html+='<button class="tutorial-choice-btn" style="width:auto;flex:1;padding:10px
 html+='</div></div>';
 }
 document.getElementById('tutLessonContent').innerHTML=html;
-if(lesson.exercise){
 var tCanvas=document.getElementById('tutorialCanvas');
-tCanvas.onclick=function(e){
-if(tutState.answered)return;
-var sq=getSquareFromEvent(e,tCanvas);
-var ex=lesson.exercise;
-var tutBoard=new ChessEngine();tutBoard.loadFEN(ex.fen);
-var mv=findMoveByUCI(tutBoard,ex.solution);
-if(mv&&sq===mv.to){
-tutState.answered=true;tutState.correct++;tutState.assessmentScore++;tutState.assessmentTotal++;
-tutState.assessmentHistory.push(true);
-tutBoard.makeMove(mv);drawBoard(tutBoard,tCanvas,null);
-var res=document.getElementById('tutExerciseResult');res.style.display='block';
-res.style.background='rgba(80,192,80,.15)';res.style.color='#50c050';
-res.innerHTML='&#10003; Correct!';
-}else{
-tutState.wrong++;tutState.assessmentTotal++;
-tutState.assessmentHistory.push(false);
-var res=document.getElementById('tutExerciseResult');res.style.display='block';
-res.style.background='rgba(255,80,80,.15)';res.style.color='#ff5050';
-res.innerHTML='&#10007; Not quite — the solution is to move the piece from '+ex.solution.substring(0,2).toUpperCase()+' to '+ex.solution.substring(2,4).toUpperCase();
-tutState.answered=true;
-}};
-}
+tCanvas.onclick=handleTutorialClick;
+tCanvas.onmousedown=function(e){e.preventDefault();handleTutorialDragStart(e);};
 }
 
 function showTutHint(){
