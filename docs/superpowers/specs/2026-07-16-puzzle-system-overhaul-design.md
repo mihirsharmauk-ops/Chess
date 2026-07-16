@@ -34,17 +34,18 @@ The current chess puzzle system has critical quality issues:
 }
 ```
 
-**Multi-move example** (Légal's Mate pattern):
+**Multi-move example** (deflection + back rank mate):
 ```javascript
 {
-  fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',
-  moves: ['f3e5', 'd1h5'],   // User plays Nxe5, then Qh5 after reply
-  opponent: ['c6e5'],         // Opponent plays Nxe5 (forced/best)
-  rating: 1300,
-  category: 'fork',
+  fen: '2r3k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1',
+  moves: ['e1e8', 'b1e8'],   // User plays Re8+, then Rxe8#
+  opponent: ['c8e8'],         // Opponent plays Rxe8 (forced recapture)
+  rating: 1100,
+  category: 'mate2',
   verified: true
 }
 ```
+1. Re8+ (check) → Rxe8 (forced) → Rxe8# (back rank mate)
 
 ### Puzzle Categories (~90 total)
 
