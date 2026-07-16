@@ -378,6 +378,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
         <div id="tutLessonContent" style="display:none"></div>
         <div class="tutorial-nav" id="tutNav" style="display:none">
           <button id="tutPrevBtn" onclick="tutorialPrev()">&#8592; Back</button>
+          <button id="tutSkipBtn" onclick="tutorialSkipLevel()" style="display:none;background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:#ffc800">Skip to Next Level &#8594;</button>
           <button id="tutNextBtn" onclick="tutorialNext()">Next &#8594;</button>
         </div>
       </div>
@@ -657,72 +658,35 @@ function showPromotionDialog(color){var overlay=document.getElementById('promoti
 function completePromotion(piece){document.getElementById('promotionOverlay').classList.remove('active');if(!pendingPromotion)return;var from=pendingPromotion.from,to=pendingPromotion.to;if(pendingPromotion.isPuzzle){processPuzzleMove(findMoveFromTo(puzzleChess,from,to,piece));if(!_puzzleMoveDrewBoard)drawBoard(puzzleChess,document.getElementById("puzzleBoardCanvas"),getLastPuzzleMove());else _puzzleMoveDrewBoard=false;}else executeGameMove(from,to,piece);pendingPromotion=null;}
 
 var PUZZLE_DB=[
-  {fen:'6k1/5ppp/4R3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:850},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/1R4K1 w - - 0 1',moves:['b1b8'],rating:850},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/R3K3 w - - 0 1',moves:['a1a8'],rating:860},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:860},
-  {fen:'6k1/5ppp/8/4Q3/8/8/5PPP/4R1K1 w - - 0 1',moves:['e5e8'],rating:870},
-  {fen:'6k1/5ppp/8/8/8/8/2Q3PPP/2R3K1 w - - 0 1',moves:['c2c8'],rating:880},
-  {fen:'6k1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1',moves:['b2b8'],rating:880},
-  {fen:'6k1/4Rppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e7e8'],rating:870},
-  {fen:'6k1/5ppp/R7/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['a6a8'],rating:870},
-  {fen:'6k1/5ppp/4Q3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:880},
-  {fen:'5rk1/4Q1pp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e7e8'],rating:920},
-  {fen:'6k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1',moves:['e2e8'],rating:880},
-  {fen:'1k1r4/pp4pp/8/8/8/8/PP4PP/1K1R2R1 w - - 0 1',moves:['d1d8'],rating:1080,opponent:['a7a5'],continuation:[]},
-  {fen:'2kr4/ppp2ppp/8/8/8/8/PP4PP/1K1R2R1 w - - 0 1',moves:['d1d8'],rating:1080,opponent:['a7a5'],continuation:[]},
-  {fen:'r4rk1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:1120},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',moves:['f3g5'],rating:1150,opponent:['g8f6'],continuation:['g5f7']},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 4',moves:['f3g5'],rating:1200,opponent:['d8f6'],continuation:['g5f7']},
-  {fen:'r1bqk2r/ppppnppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4',moves:['f3g5'],rating:1200,opponent:['d7d5'],continuation:['g5f7']},
-  {fen:'r2qkb1r/pp2pppp/2n2n2/2pp1b2/3P4/2N2N2/PPP1PPPP/R1BQKB1R w KQkq - 4 4',moves:['f3g5'],rating:1250,opponent:['d8a5'],continuation:['g5f7']},
-  {fen:'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 2',moves:['f3g5'],rating:1100,opponent:['d7d5'],continuation:['g5f7']},
-  {fen:'r1bqkbnr/pppppppp/2n5/4p3/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 1 3',moves:['d4e5'],rating:1100,opponent:['c6e5'],continuation:['b1c3']},
-  {fen:'r1bqkb1r/pppppppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3',moves:['f3g5'],rating:1150,opponent:['d7d5'],continuation:['g5f7']},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2BPP3/5N2/PPP2PPP/RNBQK2R w KQkq - 0 5',moves:['d4c5'],rating:1250,opponent:['d8a5'],continuation:[]},
-  {fen:'r2qkb1r/pp2pppp/2n2n2/2pp1b2/2PP4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 0 5',moves:['c4d5'],rating:1250,opponent:['f5d3'],continuation:['d1d3']},
-  {fen:'r1b1k2r/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5',moves:['f3g5'],rating:1200,opponent:['d7d5'],continuation:['g5f7']},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 5',moves:['b1c3'],rating:1150,opponent:['g8h8'],continuation:['c3d5']},
-  {fen:'r1bq1rk1/ppp2ppp/2np4/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQ - 0 7',moves:['d3d4'],rating:1350,opponent:['e5d4'],continuation:['f3d4']},
-  {fen:'r1bqkb1r/pppppppp/2n2n2/4p3/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3',moves:['d4e5'],rating:1100,opponent:['c6e5'],continuation:['f1b5']},
-  {fen:'r1bqkb1r/pppp1ppp/2n2n2/4p1B1/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',moves:['g5f6'],rating:1250,opponent:['d8f6'],continuation:[]},
-  {fen:'r1bqkb1r/pppppppp/2n2n2/4p1B1/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',moves:['f3e5'],rating:1300,opponent:['g4f3'],continuation:['d1f3']},
-  {fen:'r2qk2r/ppp2ppp/2n2n2/2bPp3/2B5/5N2/PPP2PPP/RNBQK2R w KQkq - 0 6',moves:['d5c6'],rating:1350,opponent:['b7c6'],continuation:['c4f7']},
-  {fen:'r1bqkb1r/pppppppp/2n2n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',moves:['f1c4'],rating:1200,opponent:['g8f6'],continuation:['d1e2']},
-  {fen:'r1bqkbnr/pppppppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 3',moves:['b5c6'],rating:1150,opponent:['d7c6'],continuation:['d2d4']},
-  {fen:'r2qkb1r/pp2pppp/2n1bn2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 4 5',moves:['f1b5'],rating:1400,opponent:['c8d7'],continuation:['b5c6']},
-  {fen:'r1bq1rk1/ppp2ppp/2n2n2/3p4/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w - - 0 7',moves:['c1g5'],rating:1400,opponent:['c8e6'],continuation:['g5f6']},
-  {fen:'r2q1rk1/pppb1ppp/4pn2/3N4/3P4/8/PPP2PPP/R1BQ1RK1 w - - 0 9',moves:['d5f6'],rating:1400,opponent:['g7f6'],continuation:['c1g5']},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P4/PPP1NPPP/RNBQK2R w KQkq - 0 4',moves:['c1g5'],rating:1350,opponent:['h7h6'],continuation:['g5f6']},
-  {fen:'4k3/8/8/4B3/4R3/8/8/4K3 w - - 0 1',moves:['e5d6'],rating:1350,opponent:['e8f8'],continuation:['e4e8']},
-  {fen:'r1bq1rk1/ppp2ppp/2n5/3N4/2b1P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',moves:['d5e7'],rating:1400,opponent:['g8h8'],continuation:['e7c8']},
-  {fen:'r1b2rk1/ppp2ppp/2n5/3N4/2b1P3/8/PPP2PPP/R1B2RK1 w - - 0 10',moves:['d5e7'],rating:1400,opponent:['g8h8'],continuation:['e7c8']},
-  {fen:'r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 4 4',moves:['e5f7'],rating:1350,opponent:['e8f8'],continuation:[]},
-  {fen:'r1bq1rk1/pp2ppbp/2np2p1/8/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 8',moves:['e4e5'],rating:1500,opponent:['d5e4'],continuation:['f3g5']},
-  {fen:'r2q1rk1/ppp2ppp/2np4/2b1p3/2B1P1n1/3P1N2/PPP2PPP/RNBQ1RK1 w - - 0 1',moves:['f3g5'],rating:1500,opponent:['g4e3'],continuation:['g5f7']},
-  {fen:'r4rk1/1b2qppp/p2p4/1p6/3NP3/1BN5/PPP2PPP/R2Q1RK1 w - - 0 1',moves:['c3d5'],rating:1500,opponent:['e7d8'],continuation:['d5e7']},
-  {fen:'r1bq1rk1/pp2ppbp/2np2p1/2b5/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 8',moves:['e4e5'],rating:1500,opponent:['d5e4'],continuation:['f3g5']},
-  {fen:'6rk/6pp/8/8/8/8/8/4Q1K1 w - - 0 1',moves:['e1e8'],rating:1500,opponent:['h8h7'],continuation:['e8g6']},
-  {fen:'5rk1/5Npp/4Q3/8/8/8/8/5RK1 w - - 0 1',moves:['f7h6'],rating:1550,opponent:['g8h8'],continuation:['e6g8']},
-  {fen:'r1b2k1r/ppppqppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQ - 0 7',moves:['c4f7'],rating:1500,opponent:['e8f7'],continuation:['f3g5']},
-  {fen:'r1b2rk1/ppppqppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w - - 0 7',moves:['c4f7'],rating:1600,opponent:['e8f7'],continuation:['f3g5']},
-  {fen:'rnbqkbnr/ppp1pppp/8/3p4/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 2',moves:['e4d5'],rating:1100,opponent:['d8d5'],continuation:['f1b5']},
-  {fen:'r1bqkbnr/pppppppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',moves:['f1c4'],rating:1100,opponent:['g8f6'],continuation:['d1e2']},
-  {fen:'6k1/5p1p/5QpB/8/8/8/5PPP/6K1 w - - 0 1',moves:['f6g7'],rating:1200,opponent:['g8h7'],continuation:['g7h6']},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/R3K2R w KQkq - 0 5',moves:['e1g1'],rating:1400,opponent:['d8f6'],continuation:['d1d8']}
+  {fen:'6k1/5ppp/4R3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:850,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/1R4K1 w - - 0 1',moves:['b1b8'],rating:850,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/R3K3 w - - 0 1',moves:['a1a8'],rating:860,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:860,category:'mate1'},
+  {fen:'6k1/5ppp/8/4Q3/8/8/5PPP/4R1K1 w - - 0 1',moves:['e5e8'],rating:870,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/2Q3PPP/2R3K1 w - - 0 1',moves:['c2c8'],rating:880,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1',moves:['b2b8'],rating:880,category:'mate1'},
+  {fen:'6k1/4Rppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e7e8'],rating:870,category:'mate1'},
+  {fen:'6k1/5ppp/R7/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['a6a8'],rating:870,category:'mate1'},
+  {fen:'6k1/5ppp/4Q3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:880,category:'mate1'},
+  {fen:'6k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1',moves:['e2e8'],rating:880,category:'mate1'},
+  {fen:'r4rk1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:1120,category:'backrank'},
+  {fen:'r1bq1rk1/ppp2ppp/2n5/3N4/2b1P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',moves:['d5e7'],rating:1400,category:'fork'},
+  {fen:'r1b2rk1/ppp2ppp/2n5/3N4/2b1P3/8/PPP2PPP/R1B2RK1 w - - 0 10',moves:['d5e7'],rating:1400,category:'fork'},
+  {fen:'6k1/5p1p/5QpB/8/8/8/5PPP/6K1 w - - 0 1',moves:['f6g7'],rating:1200,category:'mate1'},
+  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/R3K2R w KQkq - 0 5',moves:['e1g1'],rating:1400,category:'castling'}
 ];
 
 var lastShownFens = [];
 var MAX_HISTORY = 20;
 
 function generatePuzzle(){puzzleWaitingForOpponent=false;pzSelectedSquare=null;pzLegalMoves=[];puzzleMoveHistory=[];puzzleAttemptsLeft=3;puzzleSolutionIdx=0;puzzleHintSquare=null;puzzleHintUsed=false;if(window._puzzleHintInterval){clearInterval(window._puzzleHintInterval);window._puzzleHintInterval=null;}document.getElementById('puzzleResult').className='puzzle-result';document.getElementById('puzzleResult').textContent='';document.getElementById('puzzlePostActions').style.display='none';document.getElementById('pzEnginePanel').style.display='none';var filtered=PUZZLE_DB.filter(function(p){return Math.abs(p.rating-puzzleRating)<=200;});if(filtered.length<10){filtered=PUZZLE_DB.filter(function(p){return Math.abs(p.rating-puzzleRating)<=400;});}if(filtered.length<5){lastShownFens=[];filtered=PUZZLE_DB;}var available=filtered.filter(function(p){return lastShownFens.indexOf(p.fen)===-1;});if(available.length===0){lastShownFens=[];available=filtered;}var template=available[Math.floor(Math.random()*available.length)];lastShownFens.push(template.fen);if(lastShownFens.length>MAX_HISTORY){lastShownFens.shift();}currentPuzzleFEN=template.fen;puzzleChess=new ChessEngine();puzzleChess.loadFEN(template.fen);puzzleSolutionMoves=template.moves.slice();puzzleOpponentMoves=template.opponent?template.opponent.slice():[];puzzleContinuation=template.continuation?template.continuation.slice():[];puzzleTemplateRating=template.rating||1200;document.getElementById('puzzleRatingTitle').textContent='Rating: '+puzzleTemplateRating;var turn=puzzleChess.turn()==='w'?'White':'Black';var totalMoves=puzzleSolutionMoves.length;document.getElementById('puzzlePrompt').innerHTML='<div class="puzzle-goal">'+turn+' to move</div><p>Find the best move! ('+totalMoves+' move'+(totalMoves>1?'s':'')+' required, 3 attempts)</p><div style="color:#888;font-size:11px;margin-top:4px">Attempts left: <span id="pzAttemptsLeft" style="color:#7c5cff;font-weight:600">3</span></div>';document.getElementById('puzzlePlayerName').textContent=turn;document.getElementById('puzzleOppName').textContent=turn==='White'?'Black':'White';drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),null);}
-function processPuzzleMove(moveObj){if(!moveObj||!puzzleChess.makeMove(moveObj))return false;var userUci=moveObjToUCI(moveObj);puzzleMoveHistory.push(moveObj);pzSelectedSquare=null;pzLegalMoves=[];puzzleHintSquare=null;_puzzleMoveDrewBoard=true;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),moveObj);var expectedUci=puzzleSolutionMoves[puzzleSolutionIdx]||'';var isCorrect=userUci===expectedUci;if(isCorrect){puzzleSolutionIdx++;if(puzzleSolutionIdx>=puzzleSolutionMoves.length){var ratingGain=eloChange(puzzleRating,puzzleTemplateRating,true);if(puzzleHintUsed){ratingGain=Math.round(ratingGain*0.5);}puzzleRating=Math.max(100,puzzleRating+ratingGain);puzzleStats.solved++;puzzleStats.attempted++;puzzleStats.history.unshift({correct:true});if(currentUser){currentUser.puzzleRating=puzzleRating;currentUser.puzzles=(currentUser.puzzles||{solved:0,attempted:0});currentUser.puzzles.solved=(currentUser.puzzles.solved||0)+1;currentUser.puzzles.attempted=(currentUser.puzzles.attempted||0)+1;currentUser.puzzleStreak=(currentUser.puzzleStreak||0)+1;if(currentUser.puzzleStreak>(currentUser.puzzleBestStreak||0))currentUser.puzzleBestStreak=currentUser.puzzleStreak;var users=JSON.parse(localStorage.getItem('chess_users')||'{}');users[currentUser.username]=currentUser;localStorage.setItem('chess_users',JSON.stringify(users));updateUserInfo();}document.getElementById('puzzleResult').className='puzzle-result correct';document.getElementById('puzzleResult').textContent='Correct! +'+ratingGain+' rating'+(puzzleHintUsed?' (hint used)':'');document.getElementById('pzRating').textContent=puzzleRating;var ch=document.getElementById('pzRatingChange');ch.textContent='+'+ratingGain;ch.className='rating-change gain';setTimeout(showPuzzlePostActions,0);updatePuzzleStats();renderPuzzleHistory();return true;}puzzleWaitingForOpponent=true;setTimeout(function(){var oppUci=null;if(puzzleOpponentMoves.length>0&&puzzleSolutionIdx-1<puzzleOpponentMoves.length){oppUci=puzzleOpponentMoves[puzzleSolutionIdx-1];}if(!oppUci){var oppMoves=puzzleChess.moves();if(oppMoves.length>0){var scored=oppMoves.map(function(m){var tmp=new ChessEngine();tmp.loadFEN(puzzleChess.toFEN());tmp.makeMove(m);return{move:m,score:tmp.evaluate()};});scored.sort(function(a,b){return b.score-a.score;});var topN=scored.slice(0,Math.min(3,scored.length));oppUci=moveObjToUCI(topN[Math.floor(Math.random()*topN.length)].move);}}if(oppUci){var oppMove=findMoveByUCI(puzzleChess,oppUci);if(oppMove){puzzleChess.makeMove(oppMove);puzzleMoveHistory.push(oppMove);}}puzzleWaitingForOpponent=false;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),getLastPuzzleMove());var nextTurn=puzzleChess.turn()==='w'?'White':'Black';var remaining=puzzleSolutionMoves.length-puzzleSolutionIdx;document.getElementById('puzzlePrompt').innerHTML='<div class="puzzle-goal">'+nextTurn+' to move</div><p>Find the best move! ('+remaining+' move'+(remaining>1?'s':'')+' remaining)</p><div style="color:#888;font-size:11px;margin-top:4px">Attempts left: <span id="pzAttemptsLeft" style="color:#7c5cff;font-weight:600">'+puzzleAttemptsLeft+'</span></div>';},600);}else{puzzleAttemptsLeft--;if(puzzleAttemptsLeft<=0){var ratingLoss=eloChange(puzzleRating,puzzleTemplateRating,false);puzzleRating=Math.max(100,puzzleRating+ratingLoss);puzzleStats.attempted++;puzzleStats.history.unshift({correct:false});if(currentUser){currentUser.puzzleRating=puzzleRating;var users=JSON.parse(localStorage.getItem('chess_users')||'{}');users[currentUser.username]=currentUser;localStorage.setItem('chess_users',JSON.stringify(users));updateUserInfo();}document.getElementById('puzzleResult').className='puzzle-result wrong';var solutionStr='';for(var si=0;si<puzzleSolutionMoves.length;si++){var su=puzzleSolutionMoves[si];solutionStr+=su.substring(0,2).toUpperCase()+'\u2192'+su.substring(2,4).toUpperCase()+' ';}document.getElementById('puzzleResult').textContent='Out of attempts! Solution: '+solutionStr.trim();document.getElementById('pzRating').textContent=puzzleRating;var ch=document.getElementById('pzRatingChange');ch.textContent=ratingLoss;ch.className='rating-change loss';showPuzzlePostActions();updatePuzzleStats();renderPuzzleHistory();}else{document.getElementById('puzzleResult').className='puzzle-result wrong';document.getElementById('puzzleResult').textContent='Incorrect. Try again!';var el=document.getElementById('pzAttemptsLeft');if(el)el.textContent=puzzleAttemptsLeft;setTimeout(function(){document.getElementById('puzzleResult').className='puzzle-result';document.getElementById('puzzleResult').textContent='';},1500);var undone=puzzleChess.undoMove();if(undone)puzzleMoveHistory.pop();_puzzleMoveDrewBoard=true;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),getLastPuzzleMove());}}updatePuzzleStats();return isCorrect;}
+function processPuzzleMove(moveObj){if(!moveObj||!puzzleChess.makeMove(moveObj))return false;var userUci=moveObjToUCI(moveObj);puzzleMoveHistory.push(moveObj);pzSelectedSquare=null;pzLegalMoves=[];puzzleHintSquare=null;_puzzleMoveDrewBoard=true;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),moveObj);var expectedUci=puzzleSolutionMoves[puzzleSolutionIdx]||'';var isCorrect=userUci===expectedUci;if(isCorrect){puzzleSolutionIdx++;if(puzzleSolutionIdx>=puzzleSolutionMoves.length){var ratingGain=eloChange(puzzleRating,puzzleTemplateRating,true);if(puzzleHintUsed){ratingGain=Math.round(ratingGain*0.5);}puzzleRating=Math.max(100,puzzleRating+ratingGain);puzzleStats.solved++;puzzleStats.attempted++;puzzleStats.history.unshift({correct:true});if(currentUser){currentUser.puzzleRating=puzzleRating;currentUser.puzzles=(currentUser.puzzles||{solved:0,attempted:0});currentUser.puzzles.solved=(currentUser.puzzles.solved||0)+1;currentUser.puzzles.attempted=(currentUser.puzzles.attempted||0)+1;currentUser.puzzleStreak=(currentUser.puzzleStreak||0)+1;if(currentUser.puzzleStreak>(currentUser.puzzleBestStreak||0))currentUser.puzzleBestStreak=currentUser.puzzleStreak;var users=JSON.parse(localStorage.getItem('chess_users')||'{}');users[currentUser.username]=currentUser;localStorage.setItem('chess_users',JSON.stringify(users));updateUserInfo();}document.getElementById('puzzleResult').className='puzzle-result correct';document.getElementById('puzzleResult').textContent='Correct! +'+ratingGain+' rating'+(puzzleHintUsed?' (hint used)':'');document.getElementById('pzRating').textContent=puzzleRating;var ch=document.getElementById('pzRatingChange');ch.textContent='+'+ratingGain;ch.className='rating-change gain';setTimeout(showPuzzlePostActions,0);updatePuzzleStats();renderPuzzleHistory();return true;}puzzleWaitingForOpponent=true;setTimeout(function(){var oppUci=null;if(puzzleOpponentMoves.length>0&&puzzleSolutionIdx-1<puzzleOpponentMoves.length){oppUci=puzzleOpponentMoves[puzzleSolutionIdx-1];}if(!oppUci){var oppMoves=puzzleChess.moves();if(oppMoves.length>0){var scored=oppMoves.map(function(m){var tmp=new ChessEngine();tmp.loadFEN(puzzleChess.toFEN());tmp.makeMove(m);return{move:m,score:tmp.evaluate()};});scored.sort(function(a,b){return b.score-a.score;});var topN=scored.slice(0,Math.min(3,scored.length));oppUci=moveObjToUCI(topN[Math.floor(Math.random()*topN.length)].move);}}if(oppUci){var oppMove=findMoveByUCI(puzzleChess,oppUci);if(oppMove){puzzleChess.makeMove(oppMove);puzzleMoveHistory.push(oppMove);}}puzzleWaitingForOpponent=false;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),getLastPuzzleMove());var nextTurn=puzzleChess.turn()==='w'?'White':'Black';var remaining=puzzleSolutionMoves.length-puzzleSolutionIdx;document.getElementById('puzzlePrompt').innerHTML='<div class="puzzle-goal">'+nextTurn+' to move</div><p>Find the best move! ('+remaining+' move'+(remaining>1?'s':'')+' remaining)</p><div style="color:#888;font-size:11px;margin-top:4px">Attempts left: <span id="pzAttemptsLeft" style="color:#7c5cff;font-weight:600">'+puzzleAttemptsLeft+'</span></div>';},600);}else{puzzleAttemptsLeft--;if(puzzleAttemptsLeft<=0){var ratingLoss=eloChange(puzzleRating,puzzleTemplateRating,false);puzzleRating=Math.max(100,puzzleRating+ratingLoss);puzzleStats.attempted++;puzzleStats.history.unshift({correct:false});if(currentUser){currentUser.puzzleRating=puzzleRating;var users=JSON.parse(localStorage.getItem('chess_users')||'{}');users[currentUser.username]=currentUser;localStorage.setItem('chess_users',JSON.stringify(users));updateUserInfo();}document.getElementById('puzzleResult').className='puzzle-result wrong';var solutionStr='';for(var si=0;si<puzzleSolutionMoves.length;si++){var su=puzzleSolutionMoves[si];solutionStr+=su.substring(0,2).toUpperCase()+'\u2192'+su.substring(2,4).toUpperCase()+' ';}document.getElementById('puzzleResult').textContent='Out of attempts! Solution: '+solutionStr.trim();document.getElementById('pzRating').textContent=puzzleRating;var ch=document.getElementById('pzRatingChange');ch.textContent=ratingLoss;ch.className='rating-change loss';setTimeout(showPuzzlePostActions, 100);updatePuzzleStats();renderPuzzleHistory();}else{document.getElementById('puzzleResult').className='puzzle-result wrong';document.getElementById('puzzleResult').textContent='Incorrect. Try again!';var el=document.getElementById('pzAttemptsLeft');if(el)el.textContent=puzzleAttemptsLeft;setTimeout(function(){document.getElementById('puzzleResult').className='puzzle-result';document.getElementById('puzzleResult').textContent='';},1500);var undone=puzzleChess.undoMove();if(undone)puzzleMoveHistory.pop();_puzzleMoveDrewBoard=true;drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),getLastPuzzleMove());}}updatePuzzleStats();return isCorrect;}
 
 
 function showPuzzlePostActions(){
 document.getElementById('puzzlePostActions').style.display='block';
 document.getElementById('pzEnginePanel').style.display='block';
-updatePuzzleAnalysis();
+setTimeout(updatePuzzleAnalysis, 100);
 }
 
 function retryPuzzle(){
@@ -937,10 +901,10 @@ drawBoard(puzzleChess,document.getElementById('puzzleBoardCanvas'),null);
 var TUTORIAL_LESSONS={
 beginner:[
 {id:'b1',title:'The King',content:'<p>The King is the most important piece. If it\'s checkmated, you lose!</p><p><span class="highlight">Movement:</span> The King moves one square in any direction — horizontally, vertically, or diagonally.</p><p>Try clicking the King and moving it to different squares!</p>',fen:'8/8/8/4K3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b2',title:'The Queen',content:'<p>The Queen is the most powerful piece on the board.</p><p><span class="highlight">Movement:</span> She can move any number of squares in any direction — horizontally, vertically, or diagonally.</p><p>The Queen combines the power of the Rook and Bishop. Try moving her around!</p>',fen:'8/8/8/3Q4/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b3',title:'The Rook',content:'<p>The Rook is a powerful piece worth about 5 pawns.</p><p><span class="highlight">Movement:</span> The Rook moves any number of squares horizontally or vertically.</p><p>Rooks are strongest on open files (columns with no pawns) and on the 7th rank. Try moving it!</p>',fen:'8/8/8/4R3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b4',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. Try moving it!</p>',fen:'8/8/8/4B3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b5',title:'The Knight',content:'<p>The Knight is the trickiest piece!</p><p><span class="highlight">Movement:</span> The Knight moves in an "L" shape — two squares in one direction and then one square perpendicular.</p><p><span class="highlight">Jumping:</span> The Knight is the <span class="good">only piece that can jump over other pieces</span>! Notice the black pawns blocking d6 and f6 — a Bishop or Rook would be stuck, but the Knight on e5 can jump right over them to d7, f7, c4, g4, and more!</p><p>Knights are strongest in the center of the board where they can reach up to 8 squares. Try moving it!</p>',fen:'8/8/3p1p2/4N3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b2',title:'The Rook',content:'<p>The Rook is a powerful piece worth about 5 pawns.</p><p><span class="highlight">Movement:</span> The Rook moves any number of squares horizontally or vertically.</p><p>Rooks are strongest on open files (columns with no pawns) and on the 7th rank. Try moving it!</p>',fen:'8/8/8/4R3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b3',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. Try moving the light-squared and dark-squared Bishops — notice how they can never reach the other color!</p>',fen:'8/8/8/3B1B2/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b4',title:'The Queen',content:'<p>The Queen is the most powerful piece on the board.</p><p><span class="highlight">Movement:</span> She can move any number of squares in any direction — horizontally, vertically, or diagonally.</p><p>The Queen combines the power of the Rook and Bishop. Try moving her around!</p>',fen:'8/8/8/3Q4/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b5',title:'The Knight',content:'<p>The Knight is the trickiest piece!</p><p><span class="highlight">Movement:</span> The Knight moves in an "L" shape — two squares in one direction and then one square perpendicular.</p><p><span class="highlight">Jumping:</span> The Knight is the <span class="good">only piece that can jump over other pieces</span>! Notice the white pawns blocking d6 and f6 — a Bishop or Rook would be stuck, but the Knight on e5 can jump right over its own pawns to reach d7, f7, c4, g4, and more!</p><p>Knights are strongest in the center of the board where they can reach up to 8 squares. Try moving it!</p>',fen:'8/8/3P1P2/4N3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b6',title:'The Pawn',content:'<p>Pawns are the soul of chess. They\'re worth 1 point each.</p><p><span class="highlight">Movement:</span> Pawns move forward one square. On their first move, they can move forward two squares.</p><p><span class="highlight">Capturing:</span> Pawns capture diagonally forward — one square to the left or right.</p><p><span class="highlight">Promotion:</span> When a pawn reaches the other end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight.</p><p>Below are 3 exercises to practice pawn moves!</p>',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b6a',title:'Pawn: Forward Movement',content:'<p>Pawns move <span class="highlight">straight forward</span> — one square at a time.</p><p>On its very first move, a pawn can also move <span class="highlight">two squares forward</span>.</p><p>This pawn on e4 has already moved once. Try pushing it forward!</p>',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',highlight:'e4',exercise:{prompt:'Move the pawn forward to e5!',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',solution:'e4e5',hint:'Click the pawn on e4 and move it one square forward to e5.'}},
 {id:'b6b',title:'Pawn: Diagonal Capture',content:'<p>Pawns <span class="highlight">cannot capture forward</span> — they capture <span class="highlight">diagonally</span>!</p><p>Your pawn on e5 can capture the enemy pawn on d6 by moving diagonally.</p><p><span class="warn">Notice:</span> The pawn on e5 cannot move to e6 because there\'s a piece blocking it. Pawns can\'t jump over pieces.</p>',fen:'8/8/3p4/4P3/8/8/8/8 w - - 0 1',highlight:'d6',exercise:{prompt:'Capture the enemy pawn!',fen:'8/8/3p4/4P3/8/8/8/8 w - - 0 1',solution:'e5d6',hint:'Pawns capture one square diagonally — move from e5 to d6.'}},
@@ -956,14 +920,15 @@ intermediate:[
 {id:'i4',title:'Discovered Attacks',content:'<p>A <span class="highlight">discovered attack</span> happens when you move one piece out of the way, revealing an attack from another piece behind it.</p><p><span class="highlight">Discovered Check:</span> When the revealed attack is a check — especially dangerous because the opponent must deal with the check while your moved piece can do anything!</p><p><span class="highlight">Double Check:</span> When both the moved piece and the revealed piece give check — the only escape is to move the King.</p>',fen:'4k3/8/8/4B3/4R3/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
 {id:'i5',title:'Opening Principles',content:'<p><span class="highlight">1. Control the center:</span> Place pawns on e4/d4 and develop pieces toward the center. The center is the most important area of the board.</p><p><span class="highlight">2. Develop your pieces:</span> Get your Knights and Bishops out early. Don\'t move the same piece twice without a good reason.</p><p><span class="highlight">3. Castle early:</span> Get your King to safety and connect your Rooks.</p><p><span class="highlight">4. Don\'t bring the Queen out too early:</span> She can be chased around by lesser pieces, losing tempo.</p><p><span class="warn">Don\'t:</span> Move pawns on the side of the board, develop only one piece, or try to checkmate with just the Queen.</p>',fen:'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null},
 {id:'i6',title:'Common Mating Patterns',content:'<p><span class="highlight">Scholar\'s Mate:</span> f3, Bc4, Qh5, Qxf7# — attacks the weak f7 square.</p><p><span class="highlight">Légal Trap:</span> Sacrifice the Queen to deliver a Knight checkmate.</p><p><span class="highlight">Smothered Mate:</span> A Knight delivers checkmate to a King trapped by its own pieces.</p><p><span class="highlight">Anastasia\'s Mate:</span> Knight + Rook combine to trap the King on the edge.</p><p><span class="good">Tip:</span> f7 and f2 are the weakest squares in the opening because they\'re only defended by the King.</p>',fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',highlight:null,exercise:null},
-{id:'i7',title:'Basic Endgames',content:'<p><span class="highlight">King + Queen vs King:</span> Force the enemy King to the edge, then use your Queen to deliver checkmate. Easy with practice!</p><p><span class="highlight">King + Rook vs King:</span> Similar technique but takes more moves. Use "the box" method to shrink the enemy King\'s space.</p><p><span class="highlight">King + Pawn vs King:</span> The most important basic endgame. Key concept: <em>opposition</em> — when the Kings face each other with one square between.</p><p><span class="good">Rule of thumb:</span> In endgames, the King becomes an active piece — bring it toward the center!</p>',fen:'4k3/8/8/8/8/8/4Q3/4K3 w - - 0 1',highlight:null,exercise:{prompt:'Deliver checkmate in 1!',fen:'6k1/5ppp/8/8/8/8/5PPP/4Q1K1 w - - 0 1',solution:'e1e8',hint:'The back rank is undefended — Queen to e8!'}}
+{id:'i7',title:'En Passant',content:'<p><span class="highlight">En passant</span> is a special pawn capture that can only occur immediately after a pawn moves two squares forward from its starting position.</p><p>If an enemy pawn is on the 5th rank (for White) or 4th rank (for Black) and the adjacent pawn advances two squares, the enemy pawn can capture it as if it had only moved one square.</p><p><span class="highlight">Rules:</span></p><ul><li>The capture must be made on the very next move — you can\'t "save" en passant for later</li><li>The capturing pawn moves to the square the captured pawn passed through</li><li>En passant is the only capture in chess where the capturing piece doesn\'t land on the square of the captured piece</li></ul><p><span class="good">Tip:</span> Many beginners don\'t know about en passant — it\'s a powerful tool to prevent your opponent from escaping pawn tension!</p>',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w - - 0 1',highlight:null,exercise:{prompt:'White to play — capture en passant!',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w - - 0 1',solution:'d5c6',hint:'The black pawn just moved two squares from c7 to c5. Your pawn on d5 can capture it en passant by moving to c6!'}},
+{id:'i8',title:'Basic Endgames',content:'<p><span class="highlight">King + Queen vs King:</span> Force the enemy King to the edge, then use your Queen to deliver checkmate. Easy with practice!</p><p><span class="highlight">King + Rook vs King:</span> Similar technique but takes more moves. Use "the box" method to shrink the enemy King\'s space.</p><p><span class="highlight">King + Pawn vs King:</span> The most important basic endgame. Key concept: <em>opposition</em> — when the Kings face each other with one square between.</p><p><span class="good">Rule of thumb:</span> In endgames, the King becomes an active piece — bring it toward the center!</p>',fen:'4k3/8/8/8/8/8/4Q3/4K3 w - - 0 1',highlight:null,exercise:{prompt:'Deliver checkmate in 1!',fen:'6k1/5ppp/8/8/8/8/5PPP/4Q1K1 w - - 0 1',solution:'e1e8',hint:'The back rank is undefended — Queen to e8!'}}
 ],
 advanced:[
-{id:'a1',title:'Pawn Structure',content:'<p><span class="highlight">Isolated Pawn:</span> A pawn with no friendly pawns on adjacent files. Weak because it can\'t be defended by other pawns.</p><p><span class="highlight">Doubled Pawns:</span> Two pawns of the same color on the same file. Usually a weakness because they can\'t defend each other.</p><p><span class="highlight">Passed Pawn:</span> A pawn with no enemy pawns blocking or defending its path to promotion. Very powerful!</p><p><span class="highlight">Hanging Pawns:</span> Two adjacent pawns on the 4th rank that can be targets but also control important squares.</p><p><span class="good">Key principle:</span> Weak pawn structures create targets for the opponent in the endgame.</p>',fen:'r1bqkb1r/pp2pppp/2np1n2/2p5/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5',highlight:null,exercise:null},
-{id:'a2',title:'Tactical Motifs',content:'<p><span class="highlight">Deflection:</span> Forcing a defender away from an important square or piece.</p><p><span class="highlight">Decoy:</span> Luring an enemy piece to a square where it\'s vulnerable.</p><p><span class="highlight">Overloading:</span> Exploiting a piece that\'s trying to defend too many things at once.</p><p><span class="highlight">Remove the Defender:</span> Capturing the piece that\'s defending a key square or piece.</p><p><span class="highlight">Zwischenzug (Intermediate Move):</span> Instead of making the expected recapture, inserting a check or threat first.</p><p><span class="good">Practice:</span> Always ask "What is my opponent\'s piece defending?" before making a capture.</p>',fen:'r1bq1rk1/ppp2ppp/2n5/3N4/2b1P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',highlight:null,exercise:null},
-{id:'a3',title:'Positional Play',content:'<p><span class="highlight">Outposts:</span> A square (usually in the opponent\'s half) where a piece (usually a Knight) can\'t be attacked by enemy pawns. Knights on outposts are incredibly powerful!</p><p><span class="highlight">Open Files &amp; 7th Rank:</span> Rooks belong on open files. Two Rooks on the 7th rank ("pigs on the 7th") are devastating.</p><p><span class="highlight">Space Advantage:</span> Controlling more squares in the opponent\'s half. More space = more room to maneuver.</p><p><span class="highlight">Weak Squares:</span> Squares that can no longer be defended by pawns. Exploit them with your pieces!</p><p><span class="good">Prophylaxis:</span> Thinking about and preventing your opponent\'s plans before advancing your own.</p>',fen:'r1bq1rk1/ppp2ppbp/2np2p1/2b5/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
-{id:'a4',title:'Advanced Endgames',content:'<p><span class="highlight">Rook + Pawn vs Rook:</span> The Lucena position (winning) and Philidor position (drawing) are essential knowledge.</p><p><span class="highlight">Opposition:</span> In King and pawn endgames, having the opposition means the side NOT to move has an advantage.</p><p><span class="highlight">Zugzwang:</span> A position where any move makes your position worse. Common in endgames.</p><p><span class="highlight">Triangulation:</span> A technique to lose a tempo and put the opponent in zugzwang.</p><p><span class="good">Key endgame principle:</span> Activity is everything. An active King is worth more than a passive Rook in many endgames.</p>',fen:'8/4k3/8/3R4/8/8/4K3/8 w - - 0 1',highlight:null,exercise:null},
-{id:'a5',title:'Middlegame Strategy',content:'<p><span class="highlight">King Safety:</span> Always consider the safety of both Kings. An exposed King is a tactical target.</p><p><span class="highlight">Piece Activity:</span> Active pieces control more squares and create more threats. Don\'t let your pieces get passive.</p><p><span class="highlight">Plan Based on Weaknesses:</span> Identify the opponent\'s weak squares, weak pawns, or passive pieces, then create a plan to exploit them.</p><p><span class="highlight">Calculate Variations:</span> Before making a move, calculate: "If I go here, they go there, then I..."</p><p><span class="highlight">Time Management:</span> Spend more time on critical moments. Don\'t rush important decisions.</p>',fen:'r1bq1rk1/pp2ppbp/2np2p1/2b5/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
+{id:'a1',title:'Pawn Structure',content:'<p><span class="highlight">Isolated Pawn:</span> A pawn with no friendly pawns on adjacent files. Weak because it can\'t be defended by other pawns. The white pawn on d4 has no friendly pawns on the c or e files — it\'s isolated and a target.</p><p><span class="highlight">Doubled Pawns:</span> Two pawns of the same color on the same file. Usually a weakness because they can\'t defend each other. The white pawns on c3 and c4 are doubled.</p><p><span class="highlight">Passed Pawn:</span> A pawn with no enemy pawns blocking or defending its path to promotion. Very powerful! The white pawn on e5 has no black pawns on the e, d, or f files ahead of it.</p><p><span class="highlight">Hanging Pawns:</span> Two adjacent pawns on the 4th rank that can be targets but also control important squares.</p><p><span class="good">Key principle:</span> Weak pawn structures create targets for the opponent in the endgame.</p>',fen:'r1bqkb1r/pp3ppp/2n2n2/4p3/2PP4/2N5/4BPPP/R1BQK1NR w KQkq - 0 8',highlight:null,exercise:null},
+{id:'a2',title:'Tactical Motifs',content:'<p><span class="highlight">Deflection:</span> Forcing a defender away from an important square or piece.</p><p><span class="highlight">Decoy:</span> Luring an enemy piece to a square where it\'s vulnerable.</p><p><span class="highlight">Overloading:</span> Exploiting a piece that\'s trying to defend too many things at once.</p><p><span class="highlight">Remove the Defender:</span> Capturing the piece that\'s defending a key square or piece.</p><p><span class="highlight">Zwischenzug (Intermediate Move):</span> Instead of making the expected recapture, inserting a check or threat first.</p><p><span class="good">Practice:</span> Always ask "What is my opponent\'s piece defending?" before making a capture.</p>',fen:'r1bq1rk1/ppp2ppp/2n5/2bN4/4P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',highlight:null,exercise:null},
+{id:'a3',title:'Positional Play',content:'<p><span class="highlight">Outposts:</span> A square (usually in the opponent\'s half) where a piece (usually a Knight) can\'t be attacked by enemy pawns. Knights on outposts are incredibly powerful!</p><p><span class="highlight">Open Files &amp; 7th Rank:</span> Rooks belong on open files. Two Rooks on the 7th rank ("pigs on the 7th") are devastating.</p><p><span class="highlight">Space Advantage:</span> Controlling more squares in the opponent\'s half. More space = more room to maneuver.</p><p><span class="highlight">Weak Squares:</span> Squares that can no longer be defended by pawns. Exploit them with your pieces!</p><p><span class="good">Prophylaxis:</span> Thinking about and preventing your opponent\'s plans before advancing your own.</p>',fen:'r1bq1rk1/pp2ppbp/2np2p1/8/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
+{id:'a4',title:'Advanced Endgames',content:'<p><span class="highlight">Rook + Pawn vs Rook:</span> The Lucena position (winning) and Philidor position (drawing) are essential knowledge.</p><p><span class="highlight">Opposition:</span> In King and pawn endgames, having the opposition means the side NOT to move has an advantage. On the board, the Kings are in direct opposition — White to move must give way!</p><p><span class="highlight">Zugzwang:</span> A position where any move makes your position worse. Common in endgames.</p><p><span class="highlight">Triangulation:</span> A technique to lose a tempo and put the opponent in zugzwang.</p><p><span class="good">Key endgame principle:</span> Activity is everything. An active King is worth more than a passive Rook in many endgames.</p>',fen:'8/8/4P3/4k3/8/4K3/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'a5',title:'Middlegame Strategy',content:'<p><span class="highlight">King Safety:</span> Always consider the safety of both Kings. An exposed King is a tactical target.</p><p><span class="highlight">Piece Activity:</span> Active pieces control more squares and create more threats. Don\'t let your pieces get passive.</p><p><span class="highlight">Plan Based on Weaknesses:</span> Identify the opponent\'s weak squares, weak pawns, or passive pieces, then create a plan to exploit them.</p><p><span class="highlight">Calculate Variations:</span> Before making a move, calculate: "If I go here, they go there, then I..."</p><p><span class="highlight">Time Management:</span> Spend more time on critical moments. Don\'t rush important decisions.</p>',fen:'r1bq1rk1/pp2ppbp/2np2p1/2p5/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
 {id:'a6',title:'Opening Repertoire',content:'<p>Having a planned opening repertoire gives you confidence in the first 10-15 moves.</p><p><span class="highlight">As White:</span></p><ul><li><strong>1.e4</strong> — Open, tactical games (Italian, Ruy Lopez, Scotch)</li><li><strong>1.d4</strong> — Positional, strategic games (Queen\'s Gambit, King\'s Indian)</li><li><strong>1.c4 / 1.Nf3</strong> — Flexible, transpositional</li></ul><p><span class="highlight">As Black vs 1.e4:</span></p><ul><li><strong>1...e5</strong> — Classical response (Open games)</li><li><strong>1...c5</strong> — Sicilian (asymmetrical, fighting chess)</li><li><strong>1...e6</strong> — French (solid)</li></ul><p><span class="good">Tip:</span> Study ideas, not just memorized moves. Understanding <em>why</em> moves are played matters more than memorization.</p>',fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null}
 ]
 };
@@ -1003,6 +968,11 @@ function tutorialPrev(){
 if(tutState.currentIdx>0){tutState.currentIdx--;tutState.answered=false;renderTutorialLesson();}
 }
 
+function tutorialSkipLevel(){
+var nextLevel=tutState.level==='beginner'?'intermediate':tutState.level==='intermediate'?'advanced':null;
+if(nextLevel){startTutorial(nextLevel);}
+}
+
 function renderTutorialLesson(){
 var lesson=tutState.lessons[tutState.currentIdx];
 var pct=Math.round((tutState.currentIdx/tutState.lessons.length)*100);
@@ -1012,6 +982,9 @@ var badge='<span class="tutorial-skill-badge '+tutState.level+'">'+tutState.leve
 document.getElementById('tutPlayerName').textContent='Lesson '+(tutState.currentIdx+1)+': '+lesson.title;
 document.getElementById('tutPrevBtn').disabled=(tutState.currentIdx===0);
 document.getElementById('tutNextBtn').textContent=(tutState.currentIdx===tutState.lessons.length-1)?'Finish \u2192':'Next \u2192';
+var skipBtn=document.getElementById('tutSkipBtn');
+var nextLevel=tutState.level==='beginner'?'intermediate':tutState.level==='intermediate'?'advanced':null;
+if(nextLevel&&skipBtn){skipBtn.style.display='block';skipBtn.textContent='Skip to '+nextLevel.charAt(0).toUpperCase()+nextLevel.slice(1)+' \u2192';}else if(skipBtn){skipBtn.style.display='none';}
 tutBoardEng=new ChessEngine();tutBoardEng.loadFEN(lesson.exercise?lesson.exercise.fen:lesson.fen);
 tutSelectedSquare=null;tutLegalMovesForPiece=[];
 dragState={active:false,piece:null,fromSquare:null,mx:0,my:0,canvasId:null};
@@ -1107,6 +1080,16 @@ var trainingMissedMove=null;
 var trainingSelectedSquare=null;
 var trainingLegalMoves=[];
 var trainingMoveHistory=[];
+var trainingDiff={mistakeChance:0.4,evalThreshold:50,searchDepth:4,userMistakeThreshold:30};
+var trainingUserPendingAnalysis=null;
+
+function configureTrainingDifficulty(level){
+if(level<=5)trainingDiff={mistakeChance:0.65,evalThreshold:80,searchDepth:3,userMistakeThreshold:20};
+else if(level<=10)trainingDiff={mistakeChance:0.50,evalThreshold:60,searchDepth:3,userMistakeThreshold:30};
+else if(level<=15)trainingDiff={mistakeChance:0.40,evalThreshold:50,searchDepth:4,userMistakeThreshold:40};
+else if(level<=22)trainingDiff={mistakeChance:0.28,evalThreshold:35,searchDepth:4,userMistakeThreshold:55};
+else trainingDiff={mistakeChance:0.18,evalThreshold:25,searchDepth:5,userMistakeThreshold:70};
+}
 
 function startTrainingGame(){
 trainingChess=new ChessEngine();trainingActive=true;
@@ -1114,8 +1097,10 @@ trainingMistakesEnabled=document.getElementById('trainingMistakesToggle').checke
 trainingHintsEnabled=document.getElementById('trainingHintsToggle').checked;
 trainingStats={found:0,missed:0};
 trainingPendingMistake=null;trainingMistakeWaiting=false;
+trainingUserPendingAnalysis=null;
 trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory=[];
 trainingPrevFEN=null;
+configureTrainingDifficulty(aiLevel);
 document.getElementById('trainingExplanationCard').style.display='none';
 document.getElementById('trainingExplanation').innerHTML='';
 updateTrainingStats();
@@ -1137,24 +1122,30 @@ if(!trainingActive||trainingChess.isGameOver())return;
 document.getElementById('trainingStatus').textContent='Engine is thinking...';
 setTimeout(function(){
 if(!trainingActive||trainingChess.isGameOver())return;
-var depth=4;
-var best=trainingChess.bestMove(depth);
-if(!best||!best.from)return;
+var sDepth=trainingDiff.searchDepth;
 var allMoves=trainingChess.moves();
+if(allMoves.length===0)return;
 var engineSide=trainingChess.turn();
-var tmpBest=new ChessEngine();tmpBest.loadFEN(trainingChess.toFEN());tmpBest.makeMove(best);
-var bestScore=tmpBest.evaluate();if(engineSide==='b')bestScore=-bestScore;
-if(trainingMistakesEnabled&&allMoves.length>=2&&Math.random()<0.4){
-var worseMoves=[];
+var scores=[];
 for(var i=0;i<allMoves.length;i++){
-var tmpE=new ChessEngine();tmpE.loadFEN(trainingChess.toFEN());
-tmpE.makeMove(allMoves[i]);
-var score=tmpE.evaluate();if(engineSide==='b')score=-score;
-if(score<bestScore-15)worseMoves.push({move:allMoves[i],score:score});
+trainingChess.makeMove(allMoves[i]);
+var sc=-trainingChess.negamax(-Infinity,Infinity,sDepth-1);
+trainingChess.undoMove();
+scores.push(sc);
+}
+var bestIdx=0;
+for(var j=1;j<scores.length;j++){if(scores[j]>scores[bestIdx])bestIdx=j;}
+var best=allMoves[bestIdx];var bestScore=scores[bestIdx];
+if(trainingMistakesEnabled&&allMoves.length>=2&&Math.random()<trainingDiff.mistakeChance){
+var worseMoves=[];
+for(var k=0;k<allMoves.length;k++){
+if(k===bestIdx)continue;
+if(scores[k]<bestScore-trainingDiff.evalThreshold){
+worseMoves.push({move:allMoves[k],score:scores[k]});
+}
 }
 if(worseMoves.length>0){
 var chosen=worseMoves[Math.floor(Math.random()*worseMoves.length)];
-var moveUci=moveObjToUCI(chosen.move);
 trainingChess.makeMove(chosen.move);
 trainingMoveHistory.push(chosen.move);
 var loss=Math.abs(chosen.score-bestScore);
@@ -1176,7 +1167,7 @@ document.getElementById('trainingStatus').textContent='Your turn — '+(training
 var TRAINING_EXPLANATIONS=[
 'This move is better because it puts pressure on the opponent\'s pieces while keeping yours safe.',
 'The best move here grabs a free piece that the opponent left undefended.',
-'This move creates a double attack — it威胁 two things at once, and the opponent can only save one.',
+'This move creates a double attack — it threatens two things at once, and the opponent can only save one.',
 'By playing this move, you control the center of the board. Central pieces have the most influence.',
 'This is a tactical shot — it wins material because the opponent\'s pieces are overloaded.',
 'The best move here sets up a checkmate threat that the opponent must deal with immediately.',
@@ -1188,7 +1179,25 @@ var TRAINING_EXPLANATIONS=[
 'This is a discovered attack — by moving one piece, you reveal an attack from another piece behind it.',
 'The best move forces the opponent to react. When you dictate the pace, you control the game.',
 'This move protects your King by creating space (called "luft") so your King can escape back rank threats.',
-'The best move here wins a tempo — it attacks something while also improving your position.'
+'The best move here wins a tempo — it attacks something while also improving your position.',
+'This move creates a strong pawn chain. Connected pawns support each other and are hard to break.',
+'The best move here forks two pieces — the opponent can only save one!',
+'By playing this move, you eliminate the opponent\'s most active piece. Removing threats simplifies your advantage.',
+'This is a skewer — you attack a valuable piece, and when it moves, you capture something behind it.',
+'The best move sets up a battery along this file, making your Rooks twice as powerful.'
+];
+
+var TRAINING_USER_MISTAKE_EXPLANATIONS=[
+'Your move is okay, but there was a stronger option available.',
+'Careful! That move gives back some of your advantage.',
+'There was a more precise move here that maintains pressure.',
+'Your opponent gets counterplay with this move. A better choice keeps the initiative.',
+'That move allows the opponent to simplify into a comfortable position.',
+'A more accurate move would keep the opponent\'s pieces tied down defensively.',
+'This move is passive — the best move actively creates threats.',
+'You missed a chance to win material here.',
+'There\'s a tactical shot available that you overlooked.',
+'A stronger move would improve your piece activity while restricting the opponent.'
 ];
 
 function getTrainingExplanation(chosenMove,bestMove,engineSide,loss){
@@ -1202,6 +1211,49 @@ else if(loss>100)txt='This isn\'t the best choice. '+txt;
 else txt='There\'s a slightly better option. '+txt;
 txt+=' The best move was <b>'+bestSan+'</b> with the '+piece+'.';
 return txt;
+}
+
+function getUserMistakeExplanation(userMove,bestMove,scoreDiff){
+var userSan=moveObjToSAN(userMove);
+var bestSan=moveObjToSAN(bestMove);
+var pieceNames={p:'pawn',n:'knight',b:'bishop',r:'rook',q:'queen',k:'king'};
+var bestPiece=pieceNames[bestMove.piece.toLowerCase()]||'piece';
+var txt=TRAINING_USER_MISTAKE_EXPLANATIONS[Math.floor(Math.random()*TRAINING_USER_MISTAKE_EXPLANATIONS.length)];
+if(scoreDiff>150)txt='That was a significant mistake! '+txt;
+else if(scoreDiff>80)txt='That move is inaccurate. '+txt;
+else txt+=' ';
+txt+=' The best move was <b>'+bestSan+'</b> ('+bestPiece+').';
+txt+=' (Eval difference: ~'+Math.round(scoreDiff)+'cp)';
+return txt;
+}
+
+function analyzeUserTrainingMove(userMove){
+if(!trainingActive||trainingMistakeWaiting)return;
+var allMoves=trainingChess.moves();
+if(allMoves.length<2)return;
+var sDepth=Math.max(2,trainingDiff.searchDepth-1);
+var scores=[];
+for(var i=0;i<allMoves.length;i++){
+trainingChess.makeMove(allMoves[i]);
+var sc=-trainingChess.negamax(-Infinity,Infinity,sDepth-1);
+trainingChess.undoMove();
+scores.push(sc);
+}
+var bestIdx=0;
+for(var j=1;j<scores.length;j++){if(scores[j]>scores[bestIdx])bestIdx=j;}
+var bestMv=allMoves[bestIdx];var bestSc=scores[bestIdx];
+var userUci=moveObjToUCI(userMove);
+var bestUci=moveObjToUCI(bestMv);
+if(userUci===bestUci)return;
+var userIdx=-1;
+for(var k=0;k<allMoves.length;k++){if(moveObjToUCI(allMoves[k])===userUci){userIdx=k;break;}}
+if(userIdx<0)return;
+var scoreDiff=bestSc-scores[userIdx];
+if(scoreDiff<trainingDiff.userMistakeThreshold)return;
+var expl=getUserMistakeExplanation(userMove,bestMv,scoreDiff);
+trainingStats.missed++;
+updateTrainingStats();
+showTrainingExplanation(expl,'missed');
 }
 
 function handleTrainingClick(e){
@@ -1237,6 +1289,7 @@ updateTrainingStats();
 }
 return;
 }
+analyzeUserTrainingMove(target);
 trainingPrevFEN=trainingChess.toFEN();
 trainingChess.makeMove(target);
 trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);
@@ -1321,6 +1374,7 @@ if(trainingMistakeWaiting&&trainingPendingMistake){
 if(userUci===trainingPendingMistake.bestUci){trainingStats.found++;trainingPendingMistake=null;trainingMistakeWaiting=false;showTrainingExplanation('Excellent! You found the best move! &#10003;','good');updateTrainingStats();trainingPrevFEN=trainingChess.toFEN();trainingChess.makeMove(target);trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();if(!trainingChess.isGameOver()){setTimeout(function(){trainingAiMove();},300);}else{trainingActive=false;document.getElementById('trainingStatus').textContent='Game over!';}}
 else{trainingStats.missed++;trainingMissedMove=target;var lossMsg='The best move was <b>'+moveObjToSAN(trainingPendingMistake.bestMove)+'</b>.'+trainingPendingMistake.explanation;showTrainingExplanation(lossMsg+'<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary" onclick="retryTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Undo &amp; Retry</button><button class="btn btn-secondary" onclick="acceptTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Accept Move</button></div>','missed');trainingPendingMistake=null;trainingMistakeWaiting=false;updateTrainingStats();}
 return;}
+analyzeUserTrainingMove(target);
 trainingPrevFEN=trainingChess.toFEN();
 trainingChess.makeMove(target);trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);
 drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();
