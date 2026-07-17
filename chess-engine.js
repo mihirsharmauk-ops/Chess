@@ -152,9 +152,9 @@ class ChessEngine {
             }
           }
           // En passant
-          const epIdx = isWhiteSide ? i + 2 * dir + dc : i + dir + dc;
+          const epIdx = i + dir + dc;
           if (this.epSquare !== null && epIdx === this.epSquare && epIdx >= 0 && epIdx < 64) {
-            const capturedPawnIdx = isWhiteSide ? i + dir + dc : i + dc;
+            const capturedPawnIdx = i + dc;
             const capturedPawn = this.board[capturedPawnIdx];
             if (capturedPawn !== null && capturedPawn.toLowerCase() === 'p' && this.colorOf(capturedPawn) === enemy) {
               moves.push({ from: this.indexToSq(i), to: this.indexToSq(epIdx), piece: piece, captured: capturedPawn, promotion: null, _epCapture: true, _epCapturedIdx: capturedPawnIdx });
