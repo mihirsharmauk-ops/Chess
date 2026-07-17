@@ -285,6 +285,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
 .training-settings{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .training-settings label{display:flex;align-items:center;gap:6px;font-size:12px;color:#888;cursor:pointer}
 .training-settings input[type=checkbox]{accent-color:#7c5cff}
+.training-settings select{padding:4px 8px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.08);color:#fff;font-size:12px;outline:none}
+.training-settings select option{background:#1e1e3c;color:#fff;padding:6px;border:none}
 @media(max-width:860px){.tutorial-container,.training-container{flex-direction:column;align-items:center}.tutorial-info,.training-info{width:min(90vw,480px);max-height:none;overflow-y:visible}}
 @media(max-width:860px){.game-container,.analysis-container{flex-direction:column;align-items:center}.player-bar{width:min(90vw,480px)}.board-wrap{width:min(90vw,480px);height:min(90vw,480px)}.side-panel,.analysis-side{width:min(90vw,480px);max-height:none}.puzzle-board-section{width:100%}.puzzle-info{width:100%;max-height:none}}
 </style>
@@ -378,8 +380,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
         <div id="tutLessonContent" style="display:none"></div>
         <div class="tutorial-nav" id="tutNav" style="display:none">
           <button id="tutPrevBtn" onclick="tutorialPrev()">&#8592; Back</button>
-          <button id="tutSkipBtn" onclick="tutorialSkipLevel()" style="display:none;background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:#ffc800">Skip to Next Level &#8594;</button>
           <button id="tutNextBtn" onclick="tutorialNext()">Next &#8594;</button>
+        </div>
+        <div id="tutSkipRow" style="display:none;margin-top:8px;width:100%">
+          <button id="tutSkipBtn" onclick="tutorialSkipLevel()" style="width:100%;padding:10px;border:1px solid rgba(255,200,0,.3);border-radius:8px;background:rgba(255,200,0,.1);color:#ffc800;font-size:13px;cursor:pointer;font-weight:600;transition:all .2s"></button>
         </div>
       </div>
     </div>
@@ -398,6 +402,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e
     <div class="panel-card">
       <h3><span>&#9733;</span> Training Mode</h3>
       <div class="training-settings">
+        <label style="gap:4px">Difficulty <select id="trainingDifficultySelect"><option value="auto">Auto (Game Level)</option><option value="3">Beginner</option><option value="7">Easy</option><option value="12">Medium</option><option value="20">Hard</option><option value="28">Expert</option></select></label>
         <label><input type="checkbox" id="trainingMistakesToggle" checked> Engine makes mistakes</label>
         <label><input type="checkbox" id="trainingHintsToggle" checked> Show explanations</label>
       </div>
@@ -658,22 +663,66 @@ function showPromotionDialog(color){var overlay=document.getElementById('promoti
 function completePromotion(piece){document.getElementById('promotionOverlay').classList.remove('active');if(!pendingPromotion)return;var from=pendingPromotion.from,to=pendingPromotion.to;if(pendingPromotion.isPuzzle){processPuzzleMove(findMoveFromTo(puzzleChess,from,to,piece));if(!_puzzleMoveDrewBoard)drawBoard(puzzleChess,document.getElementById("puzzleBoardCanvas"),getLastPuzzleMove());else _puzzleMoveDrewBoard=false;}else executeGameMove(from,to,piece);pendingPromotion=null;}
 
 var PUZZLE_DB=[
-  {fen:'6k1/5ppp/4R3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:850,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/1R4K1 w - - 0 1',moves:['b1b8'],rating:850,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/R3K3 w - - 0 1',moves:['a1a8'],rating:860,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:860,category:'mate1'},
-  {fen:'6k1/5ppp/8/4Q3/8/8/5PPP/4R1K1 w - - 0 1',moves:['e5e8'],rating:870,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/2Q3PPP/2R3K1 w - - 0 1',moves:['c2c8'],rating:880,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1',moves:['b2b8'],rating:880,category:'mate1'},
-  {fen:'6k1/4Rppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e7e8'],rating:870,category:'mate1'},
-  {fen:'6k1/5ppp/R7/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['a6a8'],rating:870,category:'mate1'},
-  {fen:'6k1/5ppp/4Q3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:880,category:'mate1'},
-  {fen:'6k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1',moves:['e2e8'],rating:880,category:'mate1'},
-  {fen:'r4rk1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:1120,category:'backrank'},
-  {fen:'r1bq1rk1/ppp2ppp/2n5/3N4/2b1P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',moves:['d5e7'],rating:1400,category:'fork'},
-  {fen:'r1b2rk1/ppp2ppp/2n5/3N4/2b1P3/8/PPP2PPP/R1B2RK1 w - - 0 10',moves:['d5e7'],rating:1400,category:'fork'},
-  {fen:'6k1/5p1p/5QpB/8/8/8/5PPP/6K1 w - - 0 1',moves:['f6g7'],rating:1200,category:'mate1'},
-  {fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/R3K2R w KQkq - 0 5',moves:['e1g1'],rating:1400,category:'castling'}
+  // === MATE IN 1 - BACK RANK (rated 850-950) ===
+  {fen:'6k1/5ppp/4R3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:850,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/1R4K1 w - - 0 1',moves:['b1b8'],rating:850,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/R3K3 w - - 0 1',moves:['a1a8'],rating:860,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:860,category:'backrank'},
+  {fen:'6k1/5ppp/8/4Q3/8/8/5PPP/4R1K1 w - - 0 1',moves:['e5e8'],rating:870,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/2Q3PPP/2R3K1 w - - 0 1',moves:['c2c8'],rating:880,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/1Q3PPP/1R4K1 w - - 0 1',moves:['b2b8'],rating:880,category:'backrank'},
+  {fen:'6k1/4Rppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e7e8'],rating:870,category:'backrank'},
+  {fen:'6k1/5ppp/R7/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['a6a8'],rating:870,category:'backrank'},
+  {fen:'6k1/5ppp/4Q3/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e6e8'],rating:880,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1',moves:['e2e8'],rating:880,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e1e8'],rating:900,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/3R1K1 w - - 0 1',moves:['d1d8'],rating:900,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/1Q3PPP/6K1 w - - 0 1',moves:['b2b8'],rating:920,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/4QPPP/6K1 w - - 0 1',moves:['e2e8'],rating:920,category:'backrank'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/RR3K2 w - - 0 1',moves:['a1a8'],rating:950,category:'backrank'},
+
+  // === QUEEN MATE PATTERNS (rated 950-1100) ===
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/4QBK1 w - - 0 1',moves:['e1e8'],rating:1000,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/4QRK1 w - - 0 1',moves:['e1e8'],rating:1000,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/4Q1K1 w - - 0 1',moves:['e1e8'],rating:950,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1',moves:['a1a8'],rating:900,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1',moves:['f3f7'],rating:1000,category:'mate_pattern'},
+  {fen:'6k1/5Qpp/8/8/8/8/5PPP/6K1 w - - 0 1',moves:['f7f8'],rating:1000,category:'mate_pattern'},
+  {fen:'5k2/5ppp/8/8/8/8/5PPP/R3K3 w - - 0 1',moves:['a1a8'],rating:950,category:'mate_pattern'},
+  {fen:'5k2/5ppp/8/8/8/8/5PPP/R4PK1 w - - 0 1',moves:['a1a8'],rating:950,category:'mate_pattern'},
+  {fen:'5k2/5ppp/8/8/8/8/5PPP/4Q1NK w - - 0 1',moves:['e1e8'],rating:1000,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/5B2/5PPP/4Q1K1 w - - 0 1',moves:['f3c6'],rating:1100,category:'mate_pattern'},
+  {fen:'6k1/5ppp/8/8/8/8/5PPP/2B3K1 w - - 0 1',moves:['c1h6'],rating:1150,category:'mate_pattern'},
+
+  // === GRECO MATE (bishop + rook) ===
+  {fen:'6k1/5ppp/7B/8/8/8/5PPP/4R1K1 w - - 0 1',moves:['e1e8'],rating:1200,category:'greco'},
+  {fen:'6k1/5ppp/8/8/8/6B1/5PPP/4R1K1 w - - 0 1',moves:['e1e8'],rating:1200,category:'greco'},
+
+  // === DAMIANO MATE ===
+  {fen:'6k1/5p1p/5QpB/8/8/8/5PPP/6K1 w - - 0 1',moves:['f6g7'],rating:1200,category:'damiano'},
+
+  // === ANASTASIA MATE (knight on e7 + rook, knight blocks g8/g6) ===
+  {fen:'6k1/4Nppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:1200,category:'anastasia'},
+  {fen:'5rk1/4Nppp/8/8/8/8/5PPP/3R2K1 w - - 0 1',moves:['d1d8'],rating:1250,category:'anastasia'},
+  {fen:'6k1/4Nppp/8/8/8/8/1Q3PPP/6K1 w - - 0 1',moves:['b2b8'],rating:1200,category:'anastasia'},
+
+  // === PIN - capture pinned piece ===
+  {fen:'4k3/8/8/8/3p3B/8/3P4/4K3 w - - 0 1',moves:['h4d8'],rating:1100,category:'pin'},
+  {fen:'4k3/8/8/8/8/3p4/3P1B2/4K3 w - - 0 1',moves:['f2c5'],rating:1100,category:'pin'},
+
+  // === DEFLECTION - lure away the defender ===
+  {fen:'6k1/8/8/8/8/8/4r3/4R1K1 w - - 0 1',moves:['e1e2'],rating:1100,category:'deflection'},
+
+  // === DISCOVERED ATTACK - move piece, unleash rook ===
+  {fen:'6k1/8/8/4R3/8/8/8/4B1K1 w - - 0 1',moves:['e5e8'],rating:1200,category:'discovery'},
+  {fen:'6k1/8/8/4R3/8/3B4/8/6K1 w - - 0 1',moves:['e5e8'],rating:1200,category:'discovery'},
+
+  // === QUEEN SACRIFICE into back rank ===
+  {fen:'r4rk1/5ppp/8/8/8/8/2Q2PPP/3R2K1 w - - 0 1',moves:['c2c8'],rating:1300,category:'sacrifice'},
+  {fen:'r3r1k1/5ppp/8/8/8/8/2Q2PPP/3R2K1 w - - 0 1',moves:['c2c8'],rating:1300,category:'sacrifice'},
+
+  // === OVERLOADED DEFENDER ===
+  {fen:'6k1/8/8/8/8/8/5PPP/2RrR1K1 w - - 0 1',moves:['c1d1'],rating:1300,category:'overload'}
 ];
 
 var lastShownFens = [];
@@ -902,12 +951,13 @@ var TUTORIAL_LESSONS={
 beginner:[
 {id:'b1',title:'The King',content:'<p>The King is the most important piece. If it\'s checkmated, you lose!</p><p><span class="highlight">Movement:</span> The King moves one square in any direction — horizontally, vertically, or diagonally.</p><p>Try clicking the King and moving it to different squares!</p>',fen:'8/8/8/4K3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b2',title:'The Rook',content:'<p>The Rook is a powerful piece worth about 5 pawns.</p><p><span class="highlight">Movement:</span> The Rook moves any number of squares horizontally or vertically.</p><p>Rooks are strongest on open files (columns with no pawns) and on the 7th rank. Try moving it!</p>',fen:'8/8/8/4R3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b3',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. Try moving the light-squared and dark-squared Bishops — notice how they can never reach the other color!</p>',fen:'8/8/8/3B1B2/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'b3',title:'The Bishop',content:'<p>The Bishop moves diagonally and is worth about 3 pawns.</p><p><span class="highlight">Movement:</span> The Bishop moves any number of squares diagonally.</p><p>Each Bishop can only reach squares of one color. Try moving the light-squared and dark-squared Bishops — notice how they can never reach the other color!</p>',fen:'8/8/8/3B2B1/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
+
 {id:'b4',title:'The Queen',content:'<p>The Queen is the most powerful piece on the board.</p><p><span class="highlight">Movement:</span> She can move any number of squares in any direction — horizontally, vertically, or diagonally.</p><p>The Queen combines the power of the Rook and Bishop. Try moving her around!</p>',fen:'8/8/8/3Q4/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b5',title:'The Knight',content:'<p>The Knight is the trickiest piece!</p><p><span class="highlight">Movement:</span> The Knight moves in an "L" shape — two squares in one direction and then one square perpendicular.</p><p><span class="highlight">Jumping:</span> The Knight is the <span class="good">only piece that can jump over other pieces</span>! Notice the white pawns blocking d6 and f6 — a Bishop or Rook would be stuck, but the Knight on e5 can jump right over its own pawns to reach d7, f7, c4, g4, and more!</p><p>Knights are strongest in the center of the board where they can reach up to 8 squares. Try moving it!</p>',fen:'8/8/3P1P2/4N3/8/8/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'b6',title:'The Pawn',content:'<p>Pawns are the soul of chess. They\'re worth 1 point each.</p><p><span class="highlight">Movement:</span> Pawns move forward one square. On their first move, they can move forward two squares.</p><p><span class="highlight">Capturing:</span> Pawns capture diagonally forward — one square to the left or right.</p><p><span class="highlight">Promotion:</span> When a pawn reaches the other end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight.</p><p>Below are 3 exercises to practice pawn moves!</p>',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',highlight:null,exercise:null},
-{id:'b6a',title:'Pawn: Forward Movement',content:'<p>Pawns move <span class="highlight">straight forward</span> — one square at a time.</p><p>On its very first move, a pawn can also move <span class="highlight">two squares forward</span>.</p><p>This pawn on e4 has already moved once. Try pushing it forward!</p>',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',highlight:'e4',exercise:{prompt:'Move the pawn forward to e5!',fen:'8/8/8/8/4P3/8/8/8 w - - 0 1',solution:'e4e5',hint:'Click the pawn on e4 and move it one square forward to e5.'}},
-{id:'b6b',title:'Pawn: Diagonal Capture',content:'<p>Pawns <span class="highlight">cannot capture forward</span> — they capture <span class="highlight">diagonally</span>!</p><p>Your pawn on e5 can capture the enemy pawn on d6 by moving diagonally.</p><p><span class="warn">Notice:</span> The pawn on e5 cannot move to e6 because there\'s a piece blocking it. Pawns can\'t jump over pieces.</p>',fen:'8/8/3p4/4P3/8/8/8/8 w - - 0 1',highlight:'d6',exercise:{prompt:'Capture the enemy pawn!',fen:'8/8/3p4/4P3/8/8/8/8 w - - 0 1',solution:'e5d6',hint:'Pawns capture one square diagonally — move from e5 to d6.'}},
+{id:'b6a',title:'Pawn: Forward Movement',content:'<p>Pawns move <span class="highlight">straight forward</span> — one square at a time.</p><p>On its very first move, a pawn can also move <span class="highlight">two squares forward</span>. This pawn hasn\'t moved yet — try selecting it to see both options!</p>',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',highlight:'e2',exercise:{prompt:'Move the pawn forward two squares to e4!',fen:'8/8/8/8/8/8/4P3/8 w - - 0 1',solution:'e2e4',hint:'Click the pawn on e2 — you can move it one square to e3 or two squares to e4. Try e4!'}},
+{id:'b6b',title:'Pawn: Diagonal Capture',content:'<p>Pawns <span class="highlight">cannot capture forward</span> — they capture <span class="highlight">diagonally</span>!</p><p>Your pawn on e5 is blocked from moving forward by a piece on e6. But it can capture the enemy pawn on d6 diagonally!</p><p><span class="warn">Remember:</span> Pawns are the only piece that captures differently from how they move.</p>',fen:'8/8/3pp3/4P3/8/8/8/8 w - - 0 1',highlight:'d6',exercise:{prompt:'Capture the enemy pawn!',fen:'8/8/3pp3/4P3/8/8/8/8 w - - 0 1',solution:'e5d6',hint:'Pawns capture one square diagonally — move from e5 to d6.'}},
 {id:'b6c',title:'Pawn: Promotion',content:'<p>When a pawn reaches the <span class="highlight">8th rank</span> (the farthest row), it <span class="highlight">must be promoted</span> to a Queen, Rook, Bishop, or Knight.</p><p>Your pawn is on e7 — one square from promotion! Push it to the last rank.</p><p><span class="good">Tip:</span> Most of the time you\'ll want to promote to a Queen (called "queening"), but sometimes a Knight ("underpromotion") can deliver checkmate!</p>',fen:'8/4P3/8/8/8/8/8/8 w - - 0 1',highlight:'e8',exercise:{prompt:'Promote your pawn!',fen:'8/4P3/8/8/8/8/8/8 w - - 0 1',solution:'e7e8',hint:'Move the pawn from e7 to e8 — it will automatically promote!'}},
 {id:'b7',title:'Board Setup',content:'<p>The board is set up with 8 rows (ranks) and 8 columns (files).</p><p><span class="highlight">Bottom row (for White):</span> Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook</p><p><span class="highlight">Second row:</span> All 8 pawns</p><p><span class="highlight">Memory trick:</span> "Queen on her own color" — the White Queen goes on a white square (d1), the Black Queen on a dark square (d8).</p><p>The board is always oriented so each player has a white (light) square in the bottom-right corner.</p>',fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null},
 {id:'b8',title:'Check and Checkmate',content:'<p><span class="highlight">Check:</span> When a King is attacked by an enemy piece, it\'s "in check." The player must deal with the check immediately by:</p><ul><li>Moving the King to safety</li><li>Capturing the attacking piece</li><li>Blocking the attack (not possible against a Knight or pawn)</li></ul><p><span class="highlight">Checkmate:</span> When the King is in check and there\'s no way to escape — that\'s checkmate! The game is over.</p><p><span class="warn">Common beginner mistake:</span> Not seeing that the opponent can capture your attacking piece to escape check.</p>',fen:'6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',highlight:null,exercise:{prompt:'White to play — can you deliver checkmate?',fen:'6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',solution:'e1e8',hint:'The back rank is undefended — slide the Rook to e8!'}},
@@ -920,14 +970,14 @@ intermediate:[
 {id:'i4',title:'Discovered Attacks',content:'<p>A <span class="highlight">discovered attack</span> happens when you move one piece out of the way, revealing an attack from another piece behind it.</p><p><span class="highlight">Discovered Check:</span> When the revealed attack is a check — especially dangerous because the opponent must deal with the check while your moved piece can do anything!</p><p><span class="highlight">Double Check:</span> When both the moved piece and the revealed piece give check — the only escape is to move the King.</p>',fen:'4k3/8/8/4B3/4R3/8/8/4K3 w - - 0 1',highlight:null,exercise:null},
 {id:'i5',title:'Opening Principles',content:'<p><span class="highlight">1. Control the center:</span> Place pawns on e4/d4 and develop pieces toward the center. The center is the most important area of the board.</p><p><span class="highlight">2. Develop your pieces:</span> Get your Knights and Bishops out early. Don\'t move the same piece twice without a good reason.</p><p><span class="highlight">3. Castle early:</span> Get your King to safety and connect your Rooks.</p><p><span class="highlight">4. Don\'t bring the Queen out too early:</span> She can be chased around by lesser pieces, losing tempo.</p><p><span class="warn">Don\'t:</span> Move pawns on the side of the board, develop only one piece, or try to checkmate with just the Queen.</p>',fen:'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null},
 {id:'i6',title:'Common Mating Patterns',content:'<p><span class="highlight">Scholar\'s Mate:</span> f3, Bc4, Qh5, Qxf7# — attacks the weak f7 square.</p><p><span class="highlight">Légal Trap:</span> Sacrifice the Queen to deliver a Knight checkmate.</p><p><span class="highlight">Smothered Mate:</span> A Knight delivers checkmate to a King trapped by its own pieces.</p><p><span class="highlight">Anastasia\'s Mate:</span> Knight + Rook combine to trap the King on the edge.</p><p><span class="good">Tip:</span> f7 and f2 are the weakest squares in the opening because they\'re only defended by the King.</p>',fen:'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',highlight:null,exercise:null},
-{id:'i7',title:'En Passant',content:'<p><span class="highlight">En passant</span> is a special pawn capture that can only occur immediately after a pawn moves two squares forward from its starting position.</p><p>If an enemy pawn is on the 5th rank (for White) or 4th rank (for Black) and the adjacent pawn advances two squares, the enemy pawn can capture it as if it had only moved one square.</p><p><span class="highlight">Rules:</span></p><ul><li>The capture must be made on the very next move — you can\'t "save" en passant for later</li><li>The capturing pawn moves to the square the captured pawn passed through</li><li>En passant is the only capture in chess where the capturing piece doesn\'t land on the square of the captured piece</li></ul><p><span class="good">Tip:</span> Many beginners don\'t know about en passant — it\'s a powerful tool to prevent your opponent from escaping pawn tension!</p>',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w - - 0 1',highlight:null,exercise:{prompt:'White to play — capture en passant!',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w - - 0 1',solution:'d5c6',hint:'The black pawn just moved two squares from c7 to c5. Your pawn on d5 can capture it en passant by moving to c6!'}},
+{id:'i7',title:'En Passant',content:'<p><span class="highlight">En passant</span> is a special pawn capture that can only occur immediately after a pawn moves two squares forward from its starting position.</p><p>If an enemy pawn is on the 5th rank (for White) or 4th rank (for Black) and the adjacent pawn advances two squares, the enemy pawn can capture it as if it had only moved one square.</p><p><span class="highlight">Rules:</span></p><ul><li>The capture must be made on the very next move — you can\'t "save" en passant for later</li><li>The capturing pawn moves to the square the captured pawn passed through</li><li>En passant is the only capture in chess where the capturing piece doesn\'t land on the square of the captured piece</li></ul><p><span class="good">Tip:</span> Many beginners don\'t know about en passant — it\'s a powerful tool to prevent your opponent from escaping pawn tension!</p>',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w KQkq c6 0 1',highlight:null,exercise:{prompt:'White to play — capture en passant!',fen:'8/8/8/1PpP2k1/8/8/8/6K1 w KQkq c6 0 1',solution:'d5c6',hint:'The black pawn just moved two squares from c7 to c5. Your pawn on d5 can capture it en passant by moving to c6!'}},
 {id:'i8',title:'Basic Endgames',content:'<p><span class="highlight">King + Queen vs King:</span> Force the enemy King to the edge, then use your Queen to deliver checkmate. Easy with practice!</p><p><span class="highlight">King + Rook vs King:</span> Similar technique but takes more moves. Use "the box" method to shrink the enemy King\'s space.</p><p><span class="highlight">King + Pawn vs King:</span> The most important basic endgame. Key concept: <em>opposition</em> — when the Kings face each other with one square between.</p><p><span class="good">Rule of thumb:</span> In endgames, the King becomes an active piece — bring it toward the center!</p>',fen:'4k3/8/8/8/8/8/4Q3/4K3 w - - 0 1',highlight:null,exercise:{prompt:'Deliver checkmate in 1!',fen:'6k1/5ppp/8/8/8/8/5PPP/4Q1K1 w - - 0 1',solution:'e1e8',hint:'The back rank is undefended — Queen to e8!'}}
 ],
 advanced:[
-{id:'a1',title:'Pawn Structure',content:'<p><span class="highlight">Isolated Pawn:</span> A pawn with no friendly pawns on adjacent files. Weak because it can\'t be defended by other pawns. The white pawn on d4 has no friendly pawns on the c or e files — it\'s isolated and a target.</p><p><span class="highlight">Doubled Pawns:</span> Two pawns of the same color on the same file. Usually a weakness because they can\'t defend each other. The white pawns on c3 and c4 are doubled.</p><p><span class="highlight">Passed Pawn:</span> A pawn with no enemy pawns blocking or defending its path to promotion. Very powerful! The white pawn on e5 has no black pawns on the e, d, or f files ahead of it.</p><p><span class="highlight">Hanging Pawns:</span> Two adjacent pawns on the 4th rank that can be targets but also control important squares.</p><p><span class="good">Key principle:</span> Weak pawn structures create targets for the opponent in the endgame.</p>',fen:'r1bqkb1r/pp3ppp/2n2n2/4p3/2PP4/2N5/4BPPP/R1BQK1NR w KQkq - 0 8',highlight:null,exercise:null},
+{id:'a1',title:'Pawn Structure',content:'<p><span class="highlight">Isolated Pawn:</span> A pawn with no friendly pawns on adjacent files. Weak because it can\'t be defended by other pawns. The white pawn on e4 has no friendly pawns on the d or f files — it\'s isolated and a target.</p><p><span class="highlight">Doubled Pawns:</span> Two pawns of the same color on the same file. Usually a weakness because they can\'t defend each other. The white pawns on c3 and c4 are doubled.</p><p><span class="highlight">Passed Pawn:</span> A pawn with no enemy pawns blocking or defending its path to promotion. Very powerful! The white pawn on d5 has no black pawns on the d, c, or e files ahead of it — it\'s a passed pawn racing toward promotion.</p><p><span class="highlight">Hanging Pawns:</span> Two adjacent pawns on the 4th rank that can be targets but also control important squares.</p><p><span class="good">Key principle:</span> Weak pawn structures create targets for the opponent in the endgame.</p>',fen:'r1bqkb1r/pp4pp/2n2n2/3P4/2P1P3/2N5/5PPP/R1BQKBNR w KQkq - 0 8',highlight:null,exercise:null},
 {id:'a2',title:'Tactical Motifs',content:'<p><span class="highlight">Deflection:</span> Forcing a defender away from an important square or piece.</p><p><span class="highlight">Decoy:</span> Luring an enemy piece to a square where it\'s vulnerable.</p><p><span class="highlight">Overloading:</span> Exploiting a piece that\'s trying to defend too many things at once.</p><p><span class="highlight">Remove the Defender:</span> Capturing the piece that\'s defending a key square or piece.</p><p><span class="highlight">Zwischenzug (Intermediate Move):</span> Instead of making the expected recapture, inserting a check or threat first.</p><p><span class="good">Practice:</span> Always ask "What is my opponent\'s piece defending?" before making a capture.</p>',fen:'r1bq1rk1/ppp2ppp/2n5/2bN4/4P3/3B4/PPP2PPP/R2Q1RK1 w - - 0 10',highlight:null,exercise:null},
 {id:'a3',title:'Positional Play',content:'<p><span class="highlight">Outposts:</span> A square (usually in the opponent\'s half) where a piece (usually a Knight) can\'t be attacked by enemy pawns. Knights on outposts are incredibly powerful!</p><p><span class="highlight">Open Files &amp; 7th Rank:</span> Rooks belong on open files. Two Rooks on the 7th rank ("pigs on the 7th") are devastating.</p><p><span class="highlight">Space Advantage:</span> Controlling more squares in the opponent\'s half. More space = more room to maneuver.</p><p><span class="highlight">Weak Squares:</span> Squares that can no longer be defended by pawns. Exploit them with your pieces!</p><p><span class="good">Prophylaxis:</span> Thinking about and preventing your opponent\'s plans before advancing your own.</p>',fen:'r1bq1rk1/pp2ppbp/2np2p1/8/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
-{id:'a4',title:'Advanced Endgames',content:'<p><span class="highlight">Rook + Pawn vs Rook:</span> The Lucena position (winning) and Philidor position (drawing) are essential knowledge.</p><p><span class="highlight">Opposition:</span> In King and pawn endgames, having the opposition means the side NOT to move has an advantage. On the board, the Kings are in direct opposition — White to move must give way!</p><p><span class="highlight">Zugzwang:</span> A position where any move makes your position worse. Common in endgames.</p><p><span class="highlight">Triangulation:</span> A technique to lose a tempo and put the opponent in zugzwang.</p><p><span class="good">Key endgame principle:</span> Activity is everything. An active King is worth more than a passive Rook in many endgames.</p>',fen:'8/8/4P3/4k3/8/4K3/8/8 w - - 0 1',highlight:null,exercise:null},
+{id:'a4',title:'Advanced Endgames',content:'<p><span class="highlight">Rook + Pawn vs Rook:</span> The Lucena position (winning) and Philidor position (drawing) are essential knowledge.</p><p><span class="highlight">Opposition:</span> In King and pawn endgames, having the opposition means the side NOT to move has an advantage. On the board, the Kings are in direct opposition — White to move must give way!</p><p><span class="highlight">Zugzwang:</span> A position where any move makes your position worse. Common in endgames.</p><p><span class="highlight">Triangulation:</span> A technique to lose a tempo and put the opponent in zugzwang.</p><p><span class="good">Key endgame principle:</span> Activity is everything. An active King is worth more than a passive Rook in many endgames.</p>',fen:'8/8/8/4k3/8/3P1K2/8/8 w - - 0 1',highlight:null,exercise:null},
 {id:'a5',title:'Middlegame Strategy',content:'<p><span class="highlight">King Safety:</span> Always consider the safety of both Kings. An exposed King is a tactical target.</p><p><span class="highlight">Piece Activity:</span> Active pieces control more squares and create more threats. Don\'t let your pieces get passive.</p><p><span class="highlight">Plan Based on Weaknesses:</span> Identify the opponent\'s weak squares, weak pawns, or passive pieces, then create a plan to exploit them.</p><p><span class="highlight">Calculate Variations:</span> Before making a move, calculate: "If I go here, they go there, then I..."</p><p><span class="highlight">Time Management:</span> Spend more time on critical moments. Don\'t rush important decisions.</p>',fen:'r1bq1rk1/pp2ppbp/2np2p1/2p5/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 1',highlight:null,exercise:null},
 {id:'a6',title:'Opening Repertoire',content:'<p>Having a planned opening repertoire gives you confidence in the first 10-15 moves.</p><p><span class="highlight">As White:</span></p><ul><li><strong>1.e4</strong> — Open, tactical games (Italian, Ruy Lopez, Scotch)</li><li><strong>1.d4</strong> — Positional, strategic games (Queen\'s Gambit, King\'s Indian)</li><li><strong>1.c4 / 1.Nf3</strong> — Flexible, transpositional</li></ul><p><span class="highlight">As Black vs 1.e4:</span></p><ul><li><strong>1...e5</strong> — Classical response (Open games)</li><li><strong>1...c5</strong> — Sicilian (asymmetrical, fighting chess)</li><li><strong>1...e6</strong> — French (solid)</li></ul><p><span class="good">Tip:</span> Study ideas, not just memorized moves. Understanding <em>why</em> moves are played matters more than memorization.</p>',fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',highlight:null,exercise:null}
 ]
@@ -961,7 +1011,8 @@ function tutorialNext(){
 if(tutState.currentIdx<tutState.lessons.length-1){
 tutState.currentIdx++;tutState.answered=false;renderTutorialLesson();
 }else{
-assessSkill();showTutorialComplete();
+var completedLevel=tutState.level;
+assessSkill();showTutorialComplete(completedLevel);
 }}
 
 function tutorialPrev(){
@@ -983,8 +1034,9 @@ document.getElementById('tutPlayerName').textContent='Lesson '+(tutState.current
 document.getElementById('tutPrevBtn').disabled=(tutState.currentIdx===0);
 document.getElementById('tutNextBtn').textContent=(tutState.currentIdx===tutState.lessons.length-1)?'Finish \u2192':'Next \u2192';
 var skipBtn=document.getElementById('tutSkipBtn');
+var skipRow=document.getElementById('tutSkipRow');
 var nextLevel=tutState.level==='beginner'?'intermediate':tutState.level==='intermediate'?'advanced':null;
-if(nextLevel&&skipBtn){skipBtn.style.display='block';skipBtn.textContent='Skip to '+nextLevel.charAt(0).toUpperCase()+nextLevel.slice(1)+' \u2192';}else if(skipBtn){skipBtn.style.display='none';}
+if(nextLevel&&skipBtn&&skipRow){skipRow.style.display='block';skipBtn.textContent='Skip to '+nextLevel.charAt(0).toUpperCase()+nextLevel.slice(1)+' \u2192';if(nextLevel==='advanced'){skipBtn.style.background='rgba(255,80,80,.1)';skipBtn.style.borderColor='rgba(255,80,80,.3)';skipBtn.style.color='#ff5050';}else{skipBtn.style.background='rgba(255,200,0,.1)';skipBtn.style.borderColor='rgba(255,200,0,.3)';skipBtn.style.color='#ffc800';}}else if(skipRow){skipRow.style.display='none';}
 tutBoardEng=new ChessEngine();tutBoardEng.loadFEN(lesson.exercise?lesson.exercise.fen:lesson.fen);
 tutSelectedSquare=null;tutLegalMovesForPiece=[];
 dragState={active:false,piece:null,fromSquare:null,mx:0,my:0,canvasId:null};
@@ -1036,9 +1088,8 @@ if(currentUser){currentUser.tutorialLevel=detectedLevel;var users=JSON.parse(loc
 }
 }
 
-function showTutorialComplete(){
-var level=tutState.level;var origLevel=TUTORIAL_LESSONS[tutState.level]?'your level':'';
-var detected=tutState.level;
+function showTutorialComplete(completedLevel){
+var level=completedLevel||tutState.level;var detected=tutState.level;
 var ratio=tutState.assessmentTotal>0?Math.round(tutState.assessmentScore/tutState.assessmentTotal*100):0;
 var html='<h3><span>&#9733;</span> Tutorial Complete!</h3>';
 html+='<p>You completed the <span class="highlight">'+level.charAt(0).toUpperCase()+level.slice(1)+'</span> track!</p>';
@@ -1080,15 +1131,17 @@ var trainingMissedMove=null;
 var trainingSelectedSquare=null;
 var trainingLegalMoves=[];
 var trainingMoveHistory=[];
-var trainingDiff={mistakeChance:0.4,evalThreshold:50,searchDepth:4,userMistakeThreshold:30};
-var trainingUserPendingAnalysis=null;
+var trainingDiff={mistakeChance:0.4,evalThreshold:50,searchDepth:4,userMistakeThreshold:120};
+var trainingUserPendingMistake=null;
+var trainingUserMistakeWaiting=false;
+var trainingUserMissedMove=null;
 
 function configureTrainingDifficulty(level){
-if(level<=5)trainingDiff={mistakeChance:0.65,evalThreshold:80,searchDepth:3,userMistakeThreshold:20};
-else if(level<=10)trainingDiff={mistakeChance:0.50,evalThreshold:60,searchDepth:3,userMistakeThreshold:30};
-else if(level<=15)trainingDiff={mistakeChance:0.40,evalThreshold:50,searchDepth:4,userMistakeThreshold:40};
-else if(level<=22)trainingDiff={mistakeChance:0.28,evalThreshold:35,searchDepth:4,userMistakeThreshold:55};
-else trainingDiff={mistakeChance:0.18,evalThreshold:25,searchDepth:5,userMistakeThreshold:70};
+if(level<=5)trainingDiff={mistakeChance:0.65,evalThreshold:80,searchDepth:3,userMistakeThreshold:100};
+else if(level<=10)trainingDiff={mistakeChance:0.50,evalThreshold:60,searchDepth:3,userMistakeThreshold:120};
+else if(level<=15)trainingDiff={mistakeChance:0.40,evalThreshold:50,searchDepth:4,userMistakeThreshold:150};
+else if(level<=22)trainingDiff={mistakeChance:0.28,evalThreshold:35,searchDepth:4,userMistakeThreshold:180};
+else trainingDiff={mistakeChance:0.18,evalThreshold:25,searchDepth:5,userMistakeThreshold:220};
 }
 
 function startTrainingGame(){
@@ -1097,10 +1150,11 @@ trainingMistakesEnabled=document.getElementById('trainingMistakesToggle').checke
 trainingHintsEnabled=document.getElementById('trainingHintsToggle').checked;
 trainingStats={found:0,missed:0};
 trainingPendingMistake=null;trainingMistakeWaiting=false;
-trainingUserPendingAnalysis=null;
+trainingUserPendingMistake=null;trainingUserMistakeWaiting=false;trainingUserMissedMove=null;
 trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory=[];
 trainingPrevFEN=null;
-configureTrainingDifficulty(aiLevel);
+var diffVal=document.getElementById('trainingDifficultySelect').value;
+configureTrainingDifficulty(diffVal==='auto'?aiLevel:parseInt(diffVal));
 document.getElementById('trainingExplanationCard').style.display='none';
 document.getElementById('trainingExplanation').innerHTML='';
 updateTrainingStats();
@@ -1153,7 +1207,7 @@ var expl=getTrainingExplanation(chosen.move,best,engineSide,loss);
 trainingPendingMistake={move:chosen.move,bestMove:best,bestUci:moveObjToUCI(best),explanation:expl,scoreLost:loss};
 trainingMistakeWaiting=true;
 drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();
-document.getElementById('trainingStatus').textContent='Engine played a suboptimal move! Find the best response.';
+document.getElementById('trainingStatus').textContent='The engine played a suboptimal move! Find the best response.';
 return;
 }
 }
@@ -1227,8 +1281,37 @@ txt+=' (Eval difference: ~'+Math.round(scoreDiff)+'cp)';
 return txt;
 }
 
+function getPositionAwareExplanation(userMove,bestMove,scoreDiff){
+var bestSan=moveObjToSAN(bestMove);
+var userSan=moveObjToSAN(userMove);
+var pieceNames={p:'pawn',n:'knight',b:'bishop',r:'rook',q:'queen',k:'king'};
+var userPiece=pieceNames[userMove.piece.toLowerCase()]||'piece';
+var bestPiece=pieceNames[bestMove.piece.toLowerCase()]||'piece';
+var reason='';
+var captured=bestMove.captured;
+var userCaptured=userMove.captured;
+if(captured&&!userCaptured){
+reason='The best move wins '+pieceNames[captured.toLowerCase()]+' — material wins are critical!';
+}else if(!captured&&userCaptured){
+reason='Capturing here isn\'t the best. The piece you took wasn\'t worth more than what the best move achieves.';
+}else if(bestMove.promotion){
+reason='Promoting to '+pieceNames[bestMove.promotion]+' creates immediate threats.';
+}else if(scoreDiff>200){
+reason='This position requires precision. The best move creates a decisive advantage.';
+}else if(scoreDiff>120){
+reason='The best move improves your position much more effectively here.';
+}else{
+reason='A slightly more accurate move was available that gives you a clearer edge.';
+}
+var severity='';
+if(scoreDiff>200)severity='That\'s a blunder — ';
+else if(scoreDiff>140)severity='That\'s a mistake — ';
+else severity='That\'s an inaccuracy — ';
+return severity+'<b>'+bestSan+'</b> ('+bestPiece+') is better. '+reason;
+}
+
 function analyzeUserTrainingMove(userMove){
-if(!trainingActive||trainingMistakeWaiting)return;
+if(!trainingActive||trainingMistakeWaiting||trainingUserMistakeWaiting)return;
 var allMoves=trainingChess.moves();
 if(allMoves.length<2)return;
 var sDepth=Math.max(2,trainingDiff.searchDepth-1);
@@ -1250,10 +1333,11 @@ for(var k=0;k<allMoves.length;k++){if(moveObjToUCI(allMoves[k])===userUci){userI
 if(userIdx<0)return;
 var scoreDiff=bestSc-scores[userIdx];
 if(scoreDiff<trainingDiff.userMistakeThreshold)return;
-var expl=getUserMistakeExplanation(userMove,bestMv,scoreDiff);
-trainingStats.missed++;
-updateTrainingStats();
-showTrainingExplanation(expl,'missed');
+var expl=getPositionAwareExplanation(userMove,bestMv,scoreDiff);
+trainingUserPendingMistake={move:userMove,bestMove:bestMv,bestUci:bestUci,explanation:expl,scoreDiff:scoreDiff};
+trainingUserMistakeWaiting=true;
+var btns='<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary" onclick="retryUserMistake()" style="flex:1;padding:6px 12px;font-size:13px">Undo &amp; Retry</button><button class="btn btn-secondary" onclick="acceptUserMistake()" style="flex:1;padding:6px 12px;font-size:13px">Accept Move</button></div>';
+showTrainingExplanation(expl+' '+btns,'missed');
 }
 
 function handleTrainingClick(e){
@@ -1282,14 +1366,18 @@ if(!trainingChess.isGameOver()){setTimeout(function(){trainingAiMove();},300);}
 }else{
 trainingStats.missed++;
 trainingMissedMove=target;
-var lossMsg='The best move was <b>'+moveObjToSAN(trainingPendingMistake.bestMove)+'</b>.'+trainingPendingMistake.explanation;
+var lossMsg='The engine made a mistake! The best refutation was <b>'+moveObjToSAN(trainingPendingMistake.bestMove)+'</b>. '+trainingPendingMistake.explanation;
 showTrainingExplanation(lossMsg+'<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary" onclick="retryTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Undo &amp; Retry</button><button class="btn btn-secondary" onclick="acceptTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Accept Move</button></div>','missed');
 trainingPendingMistake=null;trainingMistakeWaiting=false;
 updateTrainingStats();
 }
 return;
 }
+if(trainingUserMistakeWaiting&&trainingUserPendingMistake){
+trainingSelectedSquare=null;trainingLegalMoves=[];drawTrainingBoard();return;
+}
 analyzeUserTrainingMove(target);
+if(trainingUserMistakeWaiting){trainingSelectedSquare=null;trainingLegalMoves=[];drawTrainingBoard();return;}
 trainingPrevFEN=trainingChess.toFEN();
 trainingChess.makeMove(target);
 trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);
@@ -1323,8 +1411,10 @@ drawTrainingBoard();
 function showTrainingExplanation(msg,type){
 if(!trainingHintsEnabled){document.getElementById('trainingExplanationCard').style.display='none';return;}
 document.getElementById('trainingExplanationCard').style.display='block';
-var cls=type==='good'?'training-explanation-box':'training-mistake-box';
-var title=type==='good'?'&#10003; Nice Find!':'&#9888; Missed Opportunity';
+var cls='training-mistake-box';var title='';
+if(type==='good'){cls='training-explanation-box';title='&#10003; Nice Find!';}
+else if(type==='engine'){cls='training-mistake-box';title='&#9888; Engine Mistake';}
+else{cls='training-mistake-box';title='&#9888; Inaccuracy';}
 document.getElementById('trainingExplanation').innerHTML='<div class="'+cls+'"><h4>'+title+'</h4><p>'+msg+'</p></div>';
 }
 
@@ -1372,9 +1462,11 @@ if(target){
 var userUci=moveObjToUCI(target);
 if(trainingMistakeWaiting&&trainingPendingMistake){
 if(userUci===trainingPendingMistake.bestUci){trainingStats.found++;trainingPendingMistake=null;trainingMistakeWaiting=false;showTrainingExplanation('Excellent! You found the best move! &#10003;','good');updateTrainingStats();trainingPrevFEN=trainingChess.toFEN();trainingChess.makeMove(target);trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();if(!trainingChess.isGameOver()){setTimeout(function(){trainingAiMove();},300);}else{trainingActive=false;document.getElementById('trainingStatus').textContent='Game over!';}}
-else{trainingStats.missed++;trainingMissedMove=target;var lossMsg='The best move was <b>'+moveObjToSAN(trainingPendingMistake.bestMove)+'</b>.'+trainingPendingMistake.explanation;showTrainingExplanation(lossMsg+'<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary" onclick="retryTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Undo &amp; Retry</button><button class="btn btn-secondary" onclick="acceptTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Accept Move</button></div>','missed');trainingPendingMistake=null;trainingMistakeWaiting=false;updateTrainingStats();}
+else{trainingStats.missed++;trainingMissedMove=target;var lossMsg='The engine made a mistake! The best refutation was <b>'+moveObjToSAN(trainingPendingMistake.bestMove)+'</b>. '+trainingPendingMistake.explanation;showTrainingExplanation(lossMsg+'<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary" onclick="retryTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Undo &amp; Retry</button><button class="btn btn-secondary" onclick="acceptTrainingMiss()" style="flex:1;padding:6px 12px;font-size:13px">Accept Move</button></div>','missed');trainingPendingMistake=null;trainingMistakeWaiting=false;updateTrainingStats();}
 return;}
+if(trainingUserMistakeWaiting&&trainingUserPendingMistake){trainingSelectedSquare=null;trainingLegalMoves=[];drawTrainingBoard();return;}
 analyzeUserTrainingMove(target);
+if(trainingUserMistakeWaiting){trainingSelectedSquare=null;trainingLegalMoves=[];drawTrainingBoard();return;}
 trainingPrevFEN=trainingChess.toFEN();
 trainingChess.makeMove(target);trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(target);
 drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();
@@ -1387,6 +1479,7 @@ if(!trainingActive||trainingMoveHistory.length<2)return;
 trainingChess.undoMove();trainingChess.undoMove();
 trainingMoveHistory.pop();trainingMoveHistory.pop();
 trainingPendingMistake=null;trainingMistakeWaiting=false;trainingMissedMove=null;
+trainingUserPendingMistake=null;trainingUserMistakeWaiting=false;trainingUserMissedMove=null;
 trainingSelectedSquare=null;trainingLegalMoves=[];
 trainingPrevFEN=null;
 document.getElementById('trainingExplanationCard').style.display='none';
@@ -1407,6 +1500,30 @@ function acceptTrainingMiss(){
 if(!trainingMissedMove)return;
 var move=trainingMissedMove;
 trainingMissedMove=null;
+trainingPrevFEN=trainingChess.toFEN();
+trainingChess.makeMove(move);
+trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(move);
+document.getElementById('trainingExplanationCard').style.display='none';
+drawTrainingBoard();updateTrainingAnalysis();updateTrainingMoveList();
+if(!trainingChess.isGameOver()){setTimeout(function(){trainingAiMove();},300);}
+else{trainingActive=false;document.getElementById('trainingStatus').textContent='Game over!';}
+}
+
+function retryUserMistake(){
+if(!trainingUserPendingMistake)return;
+trainingUserPendingMistake=null;trainingUserMistakeWaiting=false;
+trainingSelectedSquare=null;trainingLegalMoves=[];
+document.getElementById('trainingExplanationCard').style.display='none';
+drawTrainingBoard();
+document.getElementById('trainingStatus').textContent='Try again — find a better move!';
+}
+
+function acceptUserMistake(){
+if(!trainingUserPendingMistake)return;
+var move=trainingUserPendingMistake.move;
+trainingUserPendingMistake=null;trainingUserMistakeWaiting=false;
+trainingStats.missed++;
+updateTrainingStats();
 trainingPrevFEN=trainingChess.toFEN();
 trainingChess.makeMove(move);
 trainingSelectedSquare=null;trainingLegalMoves=[];trainingMoveHistory.push(move);
